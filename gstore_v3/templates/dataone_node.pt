@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d1:node xmlns:d1="http://ns.dataone.org/service/types/v1" replicate="false" synchronize="true" type="mn" state="up">
+    <identifier>${node}</identifier>
+    <name>${name}</name>
+    <description>${description}</description>
+    <baseURL>${baseUrl}</baseURL>
+    <services>
+        <service name="MNRead" version="v1" available="true"/>
+        <service name="MNCore" version="v1" available="true"/>
+    </services>
+    <synchronization>
+        <schedule hour="*" mday="*" min="0/3" mon="*" sec="10" wday="?" year="*"/>
+    </synchronization>
+    <ping success="true"/>
+    <subject>${subject}</subject>
+    <contactSubject>CN=Dev Team A10142,O=Google,C=US,DC=cilogon,DC=org</contactSubject>
+</d1:node>
+
+
+
