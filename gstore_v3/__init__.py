@@ -195,7 +195,11 @@ def main(global_config, **settings):
     config.add_route('dataone_update', '/dataone/v1/{object}/update', request_method='PUT')
 
 #to the dataset
-    #use the integer dataset_id or the uuid
+    #these two added by Hays....I don't know what I am doing.
+    config.add_route('add_data', '/apps/{app}/data', request_method='POST')
+    config.add_route('add_model_id', '/apps/{app}/modelid', request_method='POST') 
+
+   #use the integer dataset_id or the uuid
     config.add_route('dataset', '/apps/{app}/datasets/{id:\d+|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/{basename}.{type}.{ext}', custom_predicates=(applist, typelist,))
     config.add_route('add_dataset', '/apps/{app}/datasets', custom_predicates=(applist,), request_method='PUT')
     config.add_route('update_dataset', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}', custom_predicates=(applist,), request_method='PUT') 

@@ -8,7 +8,7 @@
     <style>
         /** via http://getbootstrap.com/examples/cover/#**/
         body {
-            color: #585858;
+            color: #00578A;
             height:100%;
         }
         #wrap {
@@ -83,6 +83,7 @@
             <div class="cover-container">
                 <div class="inner cover">
                     <h1>WCWAVE Virtual Watershed</h1>
+                    <img src="${base_url}/docs/images/WC-WAVE_final2_0.png">
                     <p class="lead">A data framework for data discovery, delivery and documentation of watershed modeling.</p>
                     <ul>
                         <li><a class="btn btn-lg btn-default" href="${base_url}/docs/index.html">Learn more</a></li>
@@ -96,14 +97,13 @@
     <footer >
         <div class="container">
             <div class="col-sm-6">
-                <p><a href="http://edac.unm.edu">Earth Data Analysis Center</a> &#169; 2014</p>
-                <p><a href="mailto:gstore@edac.unm.edu">gstore[at]edac.unm.edu</a></p>
-                <p><a href="${base_url}/docs/tos.html">Terms of Service</a></p>
+                <p><a href="http://westernconsortium.org/">westernconsortium.org</a></p>
+                <p><a href="mailto:virtualwatershed@edac.unm.edu">virtualwatershed[at]edac.unm.edu</a></p>
+              <!--  <p><a href="${base_url}/docs/tos.html">Terms of Service</a></p> -->
             </div>
             <div class="col-sm-6">
-                <img src="${base_url}/docs/images/EDAC-Banner1_2.png">
-            </div>
-            
+            </div> 
+            <!--  <img src="${base_url}/docs/images/EDAC-Banner1_2.png">  -->
         </div>
     </footer>
 </body>

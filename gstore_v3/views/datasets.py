@@ -448,6 +448,44 @@ def indexer(request):
     except:
         return HTTPServerError('failed to put index document for %s' % d.uuid)
 
+
+
+
+#HB
+@view_config(route_name='add_model_id', request_method='POST')
+def add_model_id(request):
+    provided_uuid = generate_uuid4()
+    dataset_uuid = str(provided_uuid)
+    return Response(dataset_uuid)
+#HB
+@view_config(route_name='add_data', request_method='POST')
+def add_data(request):
+    filename = request.POST['file'].filename
+    input_file = request.POST['file'].file
+    modelname = request.params['modelname'].decode('utf-8')
+    modelid = request.params['modelid'].decode('utf-8')
+    print modelname
+    print modelid
+    file_path = os.path.join('/tmp', filename)
+    temp_file_path = file_path + '~'
+    output_file = open(temp_file_path, 'wb')
+    input_file.seek(0)
+    while True:
+        data = input_file.read(2<<16)
+        if not data:
+            break
+        output_file.write(data)
+    output_file.close()
+    os.rename(temp_file_path, file_path)
+    return Response('OK')
+
+
+
+
+
+
+
+
 '''
 dataset maintenance
 '''
