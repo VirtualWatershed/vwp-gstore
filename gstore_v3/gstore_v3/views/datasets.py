@@ -452,12 +452,6 @@ def indexer(request):
 
 
 #HB
-@view_config(route_name='add_model_id', request_method='POST')
-def add_model_id(request):
-    provided_uuid = generate_uuid4()
-    dataset_uuid = str(provided_uuid)
-    return Response(dataset_uuid)
-#HB
 @view_config(route_name='add_data', request_method='POST')
 def add_data(request):
     filename = request.POST['file'].filename
@@ -478,13 +472,6 @@ def add_data(request):
     output_file.close()
     os.rename(temp_file_path, file_path)
     return Response('OK')
-
-
-
-
-
-
-
 
 '''
 dataset maintenance

@@ -84,7 +84,7 @@
                 <div class="inner cover">
                     <h1>WCWAVE Virtual Watershed</h1>
                     <img src="${base_url}/docs/images/WC-WAVE_final2_0.png">
-                    <p class="lead">A data framework for data discovery, delivery and documentation of watershed modeling.</p>
+                    <p class="lead"> <font size="3">A web framework for data discovery, delivery and documentation of watershed modeling.</font></p>
                     <ul>
                         <li><a class="btn btn-lg btn-default" href="${base_url}/docs/index.html">Learn more</a></li>
                         <li><a class="btn btn-lg btn-default" href="mailto:gstore@edac.unm.edu">Contact us</a></li>
