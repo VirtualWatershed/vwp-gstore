@@ -456,11 +456,12 @@ def indexer(request):
 def add_data(request):
     filename = request.POST['file'].filename
     input_file = request.POST['file'].file
-    modelname = request.params['modelname'].decode('utf-8')
     modelid = request.params['modelid'].decode('utf-8')
-    print modelname
     print modelid
-    file_path = os.path.join('/tmp', filename)
+    geodatapath = '/geodata/watershed-data'
+    first_two_of_uuid = modelid[:2]
+    parent_dir = os.path.join(geodatapath, first_two_of_uuid)
+    file_path = os.path.join(parent_dir, modelid, filename)
     temp_file_path = file_path + '~'
     output_file = open(temp_file_path, 'wb')
     input_file.seek(0)
@@ -472,6 +473,7 @@ def add_data(request):
     output_file.close()
     os.rename(temp_file_path, file_path)
     return Response('OK')
+
 
 '''
 dataset maintenance

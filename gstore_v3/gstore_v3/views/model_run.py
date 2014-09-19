@@ -44,11 +44,11 @@ def add_model_id(request):
     first_two_of_uuid = dataset_uuid[:2]
     parent_dir = os.path.join(geodatapath, first_two_of_uuid)
     output_path = os.path.join(parent_dir, dataset_uuid)
+    if not os.path.isdir(geodatapath):
+        os.mkdir(geodatapath)
+    if not os.path.isdir(parent_dir):
+        os.mkdir(parent_dir)
     if not os.path.isdir(output_path):
-        if not os.path.isdir(geodatapath):
-            os.mkdir(geodatapath)
-            if not os.path.isdir(parent_dir):
-                os.mkdir(parent_dir)
         os.mkdir(output_path)
     return Response(dataset_uuid)
 
