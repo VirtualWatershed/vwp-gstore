@@ -83,6 +83,7 @@ class Dataset(Base):
         Column('license_id', Integer, ForeignKey('gstoredata.licenses.id')),
         Column('date_published', TIMESTAMP),
         Column('uuid', UUID), # we aren't setting this in postgres anymore
+	Column('model_run_uuid', UUID),
         schema='gstoredata'
     ) 
 

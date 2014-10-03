@@ -494,6 +494,7 @@ def add_dataset(request):
         }
         'uuid': 
         'taxonomy': 
+        'model_run_uuid':
         'spatial': {
             'geomtype':
             'epsg':
@@ -565,6 +566,7 @@ def add_dataset(request):
     description = post_data['description']
     basename = post_data['basename']
     taxonomy = post_data['taxonomy']
+    model_run_uuid = post_data['model_run_uuid']
     apps = post_data['apps'] if 'apps' in post_data else []
     validdates = post_data['dates'] if 'dates' in post_data else {}
     spatials = post_data['spatial'] if 'spatial' in post_data else []
@@ -606,6 +608,7 @@ def add_dataset(request):
     new_dataset = Dataset(description)
     new_dataset.basename = basename
     new_dataset.taxonomy = taxonomy
+    new_dataset.model_run_uuid = model_run_uuid
     new_dataset.record_count = records
     if taxonomy == 'vector':
         new_dataset.geomtype = geomtype
