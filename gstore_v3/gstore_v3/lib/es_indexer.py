@@ -508,7 +508,9 @@ class DatasetIndexer(EsIndexer):
         doc.update({"embargo": self.gstore_object.is_embargoed, "active": not self.gstore_object.inactive, "available": self.gstore_object.is_available})
 
         doc.update({"taxonomy": self.gstore_object.taxonomy})
+
         doc.update({"model_run_uuid": self.gstore_object.model_run_uuid})
+
         if self.gstore_object.geomtype and self.gstore_object.taxonomy == 'vector':
             doc.update({"geomtype": self.gstore_object.geomtype.lower()})
 
@@ -626,7 +628,10 @@ class DatasetIndexer(EsIndexer):
                 
             elif key == 'available':
                 data_to_update.update({"available": self.gstore_object.is_available})
-                
+
+            elif key == 'model_run_uuid':
+                data_to_update.update({"model_run_uuid": self.gstore_object.model_run_uuid})
+
             elif key == 'taxonomy':
                 data_to_update.update({"taxonomy": self.gstore_object.taxonomy})
                 if self.gstore_object.geomtype and self.gstore_object.taxonomy == 'vector':
@@ -710,6 +715,7 @@ class CollectionIndexer(EsIndexer):
 
         #TODO: this is a list in collections BUT not in datasets so check on the cross-doctype searching against it
         doc.update({"taxonomy": self.gstore_object.taxonomy})
+        doc.update({"model_run_uuid": self.gstore_object.model_run_uuid})
 
         isotopic = ''
         abstract = ''

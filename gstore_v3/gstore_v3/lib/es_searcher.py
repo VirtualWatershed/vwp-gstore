@@ -116,6 +116,8 @@ class EsSearcher():
         Raises:
             Exception: returns the es error if the status code isn't 200
         """
+	#HB
+        print self.query_data
 
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
         if results.status_code != 200:
@@ -161,6 +163,9 @@ class EsSearcher():
         start_valid_date = convert_timestamp(start_valid)
         end_valid = query_params.get('valid_end', '')
         end_valid_date = convert_timestamp(end_valid)
+	
+	#model run UUID
+        model_run_uuid = query_params.get('model_run_uuid', '')
 
         #formats/services/data type
         format = query_params.get('format', '')
@@ -221,6 +226,8 @@ class EsSearcher():
             ands.append({"query": {"term": {"services": service.lower()}}})
         if taxonomy:
             ands.append({"query": {"term": {"taxonomy": taxonomy.lower()}}})
+        if model_run_uuid:
+            ands.append({"query": {"term": {"model_run_uuid": model_run_uuid.lower()}}})
             
             #NOTE: geomtype is not currently in the indexed docs
             if geomtype and geomtype.upper() in ['POLYGON', 'POINT', 'LINESTRING', 'MULTIPOLYGON', '3D POLYGON', '3D LINESTRING']:
