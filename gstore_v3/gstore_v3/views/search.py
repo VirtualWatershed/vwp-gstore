@@ -325,6 +325,8 @@ def search_doctypes(request):
     format
     web service (wms|wcs|wfs)
     taxonomy
+    model_run_uuid
+    model_set
     geomtype
 
     /search/datasets.json?query=property&offset=0&sort=lastupdate&dir=desc&limit=15&theme=Boundaries&subtheme=General&groupname=New+Mexico
@@ -344,7 +346,7 @@ def search_doctypes(request):
 
     #reset doctypes from the route-required plural to the doctype-required singular
     doctypes = ','.join([dt[:-1] for dt in doctypes.split(',')])
-
+    print doctypes
     params = normalize_params(request.params)
 
     #get version (not for querying, just for the output) 

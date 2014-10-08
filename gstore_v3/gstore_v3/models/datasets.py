@@ -84,6 +84,9 @@ class Dataset(Base):
         Column('date_published', TIMESTAMP),
         Column('uuid', UUID), # we aren't setting this in postgres anymore
 	Column('model_run_uuid', UUID),
+        Column('model_set', String(50)),
+        Column('model_set_type', String(50)),
+        Column('model_set_taxonomy', String(50)),
         schema='gstoredata'
     ) 
 
@@ -397,9 +400,9 @@ class Dataset(Base):
         Raises:
         """
     
-        results = {'type': 'dataset', 'id': self.id, 'uuid': self.uuid, 'description': self.description, 
+        results = {'type': 'dataset', 'id': self.id, 'model_set_taxonomy': self.model_set_taxonomy, 'model_set_type': self.model_set_type, 'model_set': self.model_set, 'model_run_uuid': self.model_run_uuid, 'uuid': self.uuid, 'description': self.description, 
                 'lastupdate': self.dateadded.strftime('%Y%m%d'), 'name': self.basename, 'taxonomy': self.taxonomy,
-                'categories': [{'theme': t.theme, 'subtheme': t.subtheme, 'groupname': t.groupname} for t in self.categories]}
+                'categories': [{'modelname': t.theme, 'location': t.subtheme, 'state': t.groupname} for t in self.categories]}
         if self.box:
             results.update({'spatial': {'bbox': string_to_bbox(self.box), 'epsg': self.orig_epsg}})
             

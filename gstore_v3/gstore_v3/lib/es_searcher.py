@@ -117,9 +117,10 @@ class EsSearcher():
             Exception: returns the es error if the status code isn't 200
         """
 	#HB
-        print self.query_data
+        #print self.query_data
 
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
+        #print results.text
         if results.status_code != 200:
             self.results = {}
             raise Exception(results.text)
@@ -166,6 +167,15 @@ class EsSearcher():
 	
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
+
+        #model set (input output analytic)
+        model_set = query_params.get('model_set', '')
+
+        #model set type (raw binary and vis)
+        model_set_type = query_params.get('model_set_type', '')
+
+        #model set type (raw binary and vis)
+        model_set_taxonomy = query_params.get('model_set_taxonomy', '')
 
         #formats/services/data type
         format = query_params.get('format', '')
@@ -228,7 +238,14 @@ class EsSearcher():
             ands.append({"query": {"term": {"taxonomy": taxonomy.lower()}}})
         if model_run_uuid:
             ands.append({"query": {"term": {"model_run_uuid": model_run_uuid.lower()}}})
-            
+        if model_set:
+            ands.append({"query": {"term": {"model_set": model_set.lower()}}})
+        if model_set_type:
+            ands.append({"query": {"term": {"model_set_type": model_set_type.lower()}}})
+        if model_set_taxonomy:
+            ands.append({"query": {"term": {"model_set_taxonomy": model_set_taxonomy.lower()}}})
+   
+
             #NOTE: geomtype is not currently in the indexed docs
             if geomtype and geomtype.upper() in ['POLYGON', 'POINT', 'LINESTRING', 'MULTIPOLYGON', '3D POLYGON', '3D LINESTRING']:
                 ands.append({"query": {"term": {"geomtype": geomtype.lower()}}})

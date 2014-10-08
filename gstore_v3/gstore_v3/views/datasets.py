@@ -457,11 +457,15 @@ def add_data(request):
     filename = request.POST['file'].filename
     input_file = request.POST['file'].file
     modelid = request.params['modelid'].decode('utf-8')
-    print modelid
+    #print modelid
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]
     parent_dir = os.path.join(geodatapath, first_two_of_uuid)
+    sub_dir = os.path.join(parent_dir, modelid)
     file_path = os.path.join(parent_dir, modelid, filename)
+    #This should also check the DB to see if the model run exists, but I don't have the time right now.	
+    if not os.path.isdir(sub_dir):
+        return HTTPBadRequest('Model ID Not Found')
     temp_file_path = file_path + '~'
     output_file = open(temp_file_path, 'wb')
     input_file.seek(0)
@@ -495,6 +499,9 @@ def add_dataset(request):
         'uuid': 
         'taxonomy': 
         'model_run_uuid':
+        'model_set':
+        'model_set_type':
+        'model_set_taxonomy':
         'spatial': {
             'geomtype':
             'epsg':
@@ -556,7 +563,7 @@ def add_dataset(request):
 
     #get the data as json
     post_data = request.json_body
-
+    #print post_data
     SRID = int(request.registry.settings['SRID'])
     excluded_formats = get_all_formats(request)
     excluded_services = get_all_services(request)
@@ -567,6 +574,9 @@ def add_dataset(request):
     basename = post_data['basename']
     taxonomy = post_data['taxonomy']
     model_run_uuid = post_data['model_run_uuid']
+    model_set = post_data['model_set']
+    model_set_type = post_data['model_set_type']
+    model_set_taxonomy = post_data['model_set_taxonomy']
     apps = post_data['apps'] if 'apps' in post_data else []
     validdates = post_data['dates'] if 'dates' in post_data else {}
     spatials = post_data['spatial'] if 'spatial' in post_data else []
@@ -609,6 +619,9 @@ def add_dataset(request):
     new_dataset.basename = basename
     new_dataset.taxonomy = taxonomy
     new_dataset.model_run_uuid = model_run_uuid
+    new_dataset.model_set = model_set
+    new_dataset.model_set_type = model_set_type
+    new_dataset.model_set_taxonomy = model_set_taxonomy
     new_dataset.record_count = records
     if taxonomy == 'vector':
         new_dataset.geomtype = geomtype
@@ -722,7 +735,10 @@ def add_dataset(request):
         settings = src['settings'] if 'settings' in src else {}
 
         files = src['files']
+#HB
         for f in files:
+ #           if not os.path.isdir(f):
+  #               return HTTPBadRequest('File Not Found')
             sf = SourceFile(f)
             s.src_files.append(sf)
 

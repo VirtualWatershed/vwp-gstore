@@ -511,6 +511,12 @@ class DatasetIndexer(EsIndexer):
 
         doc.update({"model_run_uuid": self.gstore_object.model_run_uuid})
 
+        doc.update({"model_set": self.gstore_object.model_set})
+
+        doc.update({"model_set_type": self.gstore_object.model_set_type})
+
+        doc.update({"model_set_taxonomy": self.gstore_object.model_set_taxonomy})
+
         if self.gstore_object.geomtype and self.gstore_object.taxonomy == 'vector':
             doc.update({"geomtype": self.gstore_object.geomtype.lower()})
 
@@ -632,6 +638,15 @@ class DatasetIndexer(EsIndexer):
             elif key == 'model_run_uuid':
                 data_to_update.update({"model_run_uuid": self.gstore_object.model_run_uuid})
 
+            elif key == 'model_set':
+                data_to_update.update({"model_set": self.gstore_object.model_set})
+
+            elif key == 'model_set_type':
+                data_to_update.update({"model_set_type": self.gstore_object.model_set_type})
+
+            elif key == 'model_set_taxonomy':
+                data_to_update.update({"model_set_taxonomy": self.gstore_object.model_set_taxonomy})
+
             elif key == 'taxonomy':
                 data_to_update.update({"taxonomy": self.gstore_object.taxonomy})
                 if self.gstore_object.geomtype and self.gstore_object.taxonomy == 'vector':
@@ -716,6 +731,9 @@ class CollectionIndexer(EsIndexer):
         #TODO: this is a list in collections BUT not in datasets so check on the cross-doctype searching against it
         doc.update({"taxonomy": self.gstore_object.taxonomy})
         doc.update({"model_run_uuid": self.gstore_object.model_run_uuid})
+        doc.update({"model_set": self.gstore_object.model_set})
+        doc.update({"model_set_type": self.gstore_object.model_set_type})
+        doc.update({"model_set_taxonomy": self.gstore_object.model_set_taxonomy})
 
         isotopic = ''
         abstract = ''

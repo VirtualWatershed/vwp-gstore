@@ -14,11 +14,11 @@ from sqlalchemy.dialects.postgresql import UUID
 class Modelruns(Base):
     
     __table__ = Table('model_runs', Base.metadata,
-        Column('id', Integer, primary_key=True),
         Column('model_run_id', UUID, FetchedValue()),
         Column('description', String(500)),
         Column('start_date', TIMESTAMP, FetchedValue()),
         Column('end_date', TIMESTAMP, FetchedValue()),
+        Column('id', Integer, primary_key=True),
         schema = 'gstoredata'
     )
 
