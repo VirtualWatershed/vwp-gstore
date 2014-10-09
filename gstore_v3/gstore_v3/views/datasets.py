@@ -465,7 +465,7 @@ def add_data(request):
     file_path = os.path.join(parent_dir, modelid, filename)
     #This should also check the DB to see if the model run exists, but I don't have the time right now.	
     if not os.path.isdir(sub_dir):
-        return HTTPBadRequest('Model ID Not Found')
+        return HTTPBadRequest('Model RUN UUID Not Found')
     temp_file_path = file_path + '~'
     output_file = open(temp_file_path, 'wb')
     input_file.seek(0)
@@ -737,8 +737,10 @@ def add_dataset(request):
         files = src['files']
 #HB
         for f in files:
- #           if not os.path.isdir(f):
-  #               return HTTPBadRequest('File Not Found')
+            print f
+            #check if the file in the datasets is there.
+            if not os.path.isfile(f):
+                 return HTTPBadRequest('File Not Found: Did you upload this file?')
             sf = SourceFile(f)
             s.src_files.append(sf)
 
