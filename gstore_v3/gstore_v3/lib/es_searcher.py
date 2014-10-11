@@ -323,9 +323,15 @@ class EsSearcher():
         
         Raises:
         """
-        theme = query_params['theme'].replace('+', ' ') if 'theme' in query_params else ''
-        subtheme = query_params['subtheme'].replace('+', ' ') if 'subtheme' in query_params else ''
-        groupname = query_params['groupname'].replace('+', ' ') if 'groupname' in query_params else ''
+        theme = query_params['modelname'].replace('+', ' ') if 'modelname' in query_params else ''
+        subtheme = query_params['location'].replace('+', ' ') if 'location' in query_params else ''
+
+#        theme = query_params['theme'].replace('+', ' ') if 'theme' in query_params else ''
+ #       subtheme = query_params['subtheme'].replace('+', ' ') if 'subtheme' in query_params else ''
+
+        #groupname = query_params['groupname'].replace('+', ' ') if 'groupname' in query_params else ''
+        groupname = query_params['state'].replace('+', ' ') if 'state' in query_params else ''
+
 
         return theme, subtheme, groupname
 

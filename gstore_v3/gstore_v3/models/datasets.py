@@ -730,7 +730,7 @@ class Dataset(Base):
         #as {fmt: link}
         downloads = dct['downloads'][0] if dct['downloads'] else {}
 
-        preferred = ['zip', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt']
+        preferred = ['zip', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt', 'bin']
         if self.taxonomy == 'geoimage':
             preferred = ['tif', 'img', 'sid', 'ecw', 'dem', 'zip']
         elif self.taxonomy == 'vector':

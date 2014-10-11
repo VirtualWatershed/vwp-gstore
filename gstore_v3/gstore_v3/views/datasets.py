@@ -159,6 +159,7 @@ def dataset(request):
     #return things that shouldn't be zipped (pdfs, etc)
     if format != 'zip' and mimetype != 'application/x-zip-compressed':
         output = src.get_location(format)
+        #print output
         return return_fileresponse(output, mimetype, output.split('/')[-1])
 
     #return the already packed zip (this assumes that everything set to zip is already a zip)
@@ -655,9 +656,9 @@ def add_dataset(request):
 
     #add the category set (if not in categories) and assign to dataset
     for category in categories:
-        theme = category['theme']
-        subtheme = category['subtheme']
-        groupname = category['groupname']
+        theme = category['modelname']
+        subtheme = category['location']
+        groupname = category['state']
 
         c = DBSession.query(Category).filter(and_(Category.theme==theme, Category.subtheme==subtheme, Category.groupname==groupname)).first()
         if not c:

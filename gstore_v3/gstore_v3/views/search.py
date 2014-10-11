@@ -71,7 +71,8 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
 
     #TODO: figure out what to do if, horrifically, the es uuid count does not match the dataset count
     search_objects = searcher.get_result_ids()
-    
+    print "search_objects: "
+    print search_objects
     subtotal = len(search_objects)
     if subtotal < 1:
         return return_no_results(ext)
@@ -346,7 +347,7 @@ def search_doctypes(request):
 
     #reset doctypes from the route-required plural to the doctype-required singular
     doctypes = ','.join([dt[:-1] for dt in doctypes.split(',')])
-    print doctypes
+    #print doctypes
     params = normalize_params(request.params)
 
     #get version (not for querying, just for the output) 
@@ -381,6 +382,15 @@ def search_doctypes(request):
 
     base_url = request.registry.settings['BALANCER_URL']
     
+    print searcher
+    print request
+    print app
+    print limit
+    print base_url
+    print ext
+    print version
+    #print hbtest
+
     return generate_search_response(searcher, request, app, limit, base_url, ext, version)
 
 @view_config(route_name='search_within_collection')
@@ -481,10 +491,11 @@ def search(request):
     #TODO: add the rest of the filtering
     keyword = '%'+keyword+'%'
     geos = DBSession.query(geolookups).filter(geolookups.c.what==geolookup).filter(or_(geolookups.c.description.ilike(keyword), "array_to_string(aliases, ',') like '%s'" % keyword)).order_by(order_clause).limit(limit).offset(offset)
-
+    print geos
     #dump the results
     #TODO: check for anything weird about the bbox (or deal with reprojection, etc)
     response = Response(json.dumps({'results': [{'text': g.description, 'box': [float(b) for b in g.box]} for g in geos]}))
+    print response
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.content_type="application/json"    
     return response
