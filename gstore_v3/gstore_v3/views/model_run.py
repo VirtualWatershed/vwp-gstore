@@ -26,6 +26,21 @@ from ..lib.database import get_dataset
 {"description": "Your text here"}
 '''
 
+@view_config(route_name='check_model_id', request_method='POST')
+def check_model_id(request):
+#HB
+    modelid = request.params['modelid'].decode('utf-8')
+    #print modelid
+    geodatapath = '/geodata/watershed-data'
+    first_two_of_uuid = modelid[:2]
+    parent_dir = os.path.join(geodatapath, first_two_of_uuid)
+    sub_dir = os.path.join(parent_dir, modelid)
+    #This should also check the DB to see if the model run exists, but I don't have the time right now. 
+    if not os.path.isdir(sub_dir):
+        return Response('False')
+    return Response('True')    
+
+
 @view_config(route_name='add_model_id', request_method='POST')
 def add_model_id(request):
     provided_uuid = generate_uuid4()
