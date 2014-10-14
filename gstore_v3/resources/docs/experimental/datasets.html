@@ -207,6 +207,84 @@
                             </div>
                         </div>
                     </li>
+                      <li id="upload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">POST</span>
+                                <span class="http-path">/apps/{app}/data</span>
+                                <span class="http-name">Upload data to the server</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Allows uploading of model data to the Virual Watershed filesystem.</p>
+                            
+
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                            <p>None.</p>
+                            <h5>Query Parameters</h5>
+                            <p>name: Name of model</p>
+                            <p>modelid: Model Run UUID</p>
+                            <h5>Examples:</h5>
+                            <pre>payload = {"name": "isnobal","modelid": "1dacc407-6488-42c1-a4de-0b6de97b46c1"}               
+r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, auth=(u, p))</pre>
+                            <h4>Response</h4>
+                            <p>Coming soon.</p>
+                        </div>
+                    </li>
+                      <li id="newmodelrun">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">POST</span>
+                                <span class="http-path"> /apps/{app}/newmodelrun</span>
+                                <span class="http-name">Create a new model run (model_run_uuid)</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Creates a database record of the new model run and a landing point for files to be uploaded.</p>
+                            
+
+                            <h4>Request Parameters</h4>
+                            <p>None.</p>
+                            <h5>Route Parameters</h5>
+                            <p>{app}</p>
+                            <h5>Query Parameters</h5>
+                            <p>description: isnobal experimental run.</p>
+                            <p>modelid: Model Run UUID</p>
+                            <h5>Examples:</h5>
+                            <pre>{"description": "inital insert"}</pre>
+                            <h4>Response</h4>
+                            <p>modelrun UUID</p>
+                        </div>
+                    </li>
+
+
+                      <li id="checkmodeluuid">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">POST</span>
+                                <span class="http-path">/apps/{app}/checkmodeluuid</span>
+                                <span class="http-name">Check if model_run_uuid exists.</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Verifies if a model run UUID already exists.</p>
+                            
+
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                            <p>{app}</p>
+                            <h5>Query Parameters</h5>
+                            <p>modelid:</p>
+                            <h5>Examples:</h5>
+                            <pre>{"modelid": "1dacc407-6488-42c1-a4de-0b6de97b46c1"}</pre>
+                            <h4>Response</h4>
+                            <p>True or False</p>
+                        </div>
+                    </li>
 
                     <li id="statistics">
                         <div class="http-definition">
