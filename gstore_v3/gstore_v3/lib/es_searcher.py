@@ -168,6 +168,9 @@ class EsSearcher():
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
 
+        #parent model run UUID
+        parent_model_run_uuid = query_params.get('parent_model_run_uuid', '')
+
         #model set (input output analytic)
         model_set = query_params.get('model_set', '')
 
@@ -238,6 +241,8 @@ class EsSearcher():
             ands.append({"query": {"term": {"taxonomy": taxonomy.lower()}}})
         if model_run_uuid:
             ands.append({"query": {"term": {"model_run_uuid": model_run_uuid.lower()}}})
+        if parent_model_run_uuid:
+            ands.append({"query": {"term": {"parent_model_run_uuid": parent_model_run_uuid.lower()}}})
         if model_set:
             ands.append({"query": {"term": {"model_set": model_set.lower()}}})
         if model_set_type:

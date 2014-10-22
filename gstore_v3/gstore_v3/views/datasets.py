@@ -501,6 +501,7 @@ def add_dataset(request):
         'taxonomy': 
         'model_run_uuid':
         'model_set':
+        'parent_model_run_uuid':
         'model_set_type':
         'model_set_taxonomy':
         'spatial': {
@@ -575,6 +576,7 @@ def add_dataset(request):
     basename = post_data['basename']
     taxonomy = post_data['taxonomy']
     model_run_uuid = post_data['model_run_uuid']
+    parent_model_run_uuid = post_data['parent_model_run_uuid']
     model_set = post_data['model_set']
     model_set_type = post_data['model_set_type']
     model_set_taxonomy = post_data['model_set_taxonomy']
@@ -620,6 +622,7 @@ def add_dataset(request):
     new_dataset.basename = basename
     new_dataset.taxonomy = taxonomy
     new_dataset.model_run_uuid = model_run_uuid
+    new_dataset.parent_model_run_uuid = parent_model_run_uuid
     new_dataset.model_set = model_set
     new_dataset.model_set_type = model_set_type
     new_dataset.model_set_taxonomy = model_set_taxonomy
