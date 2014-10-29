@@ -233,7 +233,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('static', 'no')
         layer.metadata.set('annotation_name', '%s: %s' % (valid_basename, d.dateadded))
         layer.metadata.set('wcs_label', valid_basename)
-        layer.metadata.set('wcs_formats', 'GEOTIFF_16')
+        layer.metadata.set('wcs_formats', 'GEOTIFF_16,netCDF,GSAG')
   
         #TODO: change the native format - not everything is a geotiff now
         #layer.metadata.set('wcs_nativeformat', 'GTiff')
@@ -369,11 +369,21 @@ def get_outputformat(fmt):
         of.setMimetype('image/gif')
         of.imagemode = mapscript.MS_IMAGEMODE_PC256
     elif fmt == 'tif' or fmt == 'GEOTIFF_16':
-        #for integer rasters
+        #for float rasters
         of = mapscript.outputFormatObj('GDAL/GTiff', 'GEOTIFF_16')
         of.setExtension('tif')
         of.setMimetype('image/tiff')
-        of.imagemode = mapscript.MS_IMAGEMODE_INT16
+        of.imagemode = mapscript.MS_IMAGEMODE_FLOAT32
+    elif fmt == 'netCDF' or fmt == 'netcdf':
+        of = mapscript.outputFormatObj('GDAL/netCDF', 'netCDF')
+        of.setExtension('nc')
+        of.setMimetype('application/x-netcdf')
+        of.imagemode = mapscript.MS_IMAGEMODE_FLOAT32
+    elif fmt == 'gsag' or fmt == 'GSAG':
+        of = mapscript.outputFormatObj('GDAL/GSAG', 'GSAG')
+        of.setExtension('grd')
+        of.setMimetype('text/plain')
+        of.imagemode = mapscript.MS_IMAGEMODE_FLOAT32
     elif fmt == 'tif32' or fmt == 'GEOTIFF_FLOAT32':
         #for the floating point rasters like landsat img
         of = mapscript.outputFormatObj('GDAL/GTiff', 'GEOTIFF_FLOAT32')
@@ -693,7 +703,7 @@ def datasets(request):
 
         #add the supported output formats
         #TODO: change this to include the formats for the WCS correctly
-        output_formats = ['png', 'gif', 'jpg']
+        output_formats = ['png', 'gif', 'jpg', 'netcdf', 'gsag']
         for output_format in output_formats:
             of = get_outputformat(output_format)
             m.appendOutputFormat(of)

@@ -195,7 +195,8 @@ def main(global_config, **settings):
     config.add_route('dataone_update', '/dataone/v1/{object}/update', request_method='PUT')
 
 #to the dataset
-    #these two added by Hays....I don't know what I am doing.
+    #VW specific.
+    config.add_route('check_auth', '/apps/{app}/auth', request_method='GET')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')
