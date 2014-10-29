@@ -394,7 +394,7 @@ def get_outputformat(fmt):
         of = mapscript.outputFormatObj('GDAL/AAIGRID', 'AAIGRID')
         of.setExtension('grd')
         of.setMimetype('image/x-aaigrid')
-        of.imagemode = mapscript.MS_IMAGEMODE_INT16
+        of.imagemode = mapscript.MS_IMAGEMODE_FLOAT32
         #of.setOption('FILENAME','result.grd')
     else:
         of = None
@@ -703,7 +703,7 @@ def datasets(request):
 
         #add the supported output formats
         #TODO: change this to include the formats for the WCS correctly
-        output_formats = ['png', 'gif', 'jpg', 'netcdf', 'gsag']
+        output_formats = ['png', 'gif', 'jpg', 'netcdf', 'gsag', 'aaigrid']
         for output_format in output_formats:
             of = get_outputformat(output_format)
             m.appendOutputFormat(of)
