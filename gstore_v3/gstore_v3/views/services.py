@@ -233,7 +233,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('static', 'no')
         layer.metadata.set('annotation_name', '%s: %s' % (valid_basename, d.dateadded))
         layer.metadata.set('wcs_label', valid_basename)
-        layer.metadata.set('wcs_formats', 'GEOTIFF_16,netCDF,GSAG')
+        layer.metadata.set('wcs_formats', 'GEOTIFF_16,netCDF,GSAG,ehdr')
   
         #TODO: change the native format - not everything is a geotiff now
         #layer.metadata.set('wcs_nativeformat', 'GTiff')
@@ -395,6 +395,11 @@ def get_outputformat(fmt):
         of.setExtension('grd')
         of.setMimetype('image/x-aaigrid')
         of.imagemode = mapscript.MS_IMAGEMODE_FLOAT32
+    elif fmt == 'ehdr':
+        of = mapscript.outputFormatObj('GDAL/EHdr', 'EHdr')
+        of.setExtension('ehdr')
+        of.setMimetype('image/bil')
+        of.imagemode = mapscript.MS_IMAGEMODE_FLOAT32  
         #of.setOption('FILENAME','result.grd')
     else:
         of = None
@@ -703,7 +708,7 @@ def datasets(request):
 
         #add the supported output formats
         #TODO: change this to include the formats for the WCS correctly
-        output_formats = ['png', 'gif', 'jpg', 'netcdf', 'gsag', 'aaigrid']
+        output_formats = ['png', 'gif', 'jpg', 'netcdf', 'gsag', 'aaigrid', 'ehdr']
         for output_format in output_formats:
             of = get_outputformat(output_format)
             m.appendOutputFormat(of)
