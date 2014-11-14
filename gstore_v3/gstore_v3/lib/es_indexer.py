@@ -511,6 +511,10 @@ class DatasetIndexer(EsIndexer):
 
         doc.update({"model_run_uuid": self.gstore_object.model_run_uuid})
 
+        doc.update({"model_run_name": str(self.gstore_object.model_run_name)})
+
+        doc.update({"model_vars": str(self.gstore_object.model_vars)})
+ 
         doc.update({"parent_model_run_uuid": self.gstore_object.parent_model_run_uuid})
 
         doc.update({"model_set": self.gstore_object.model_set})
@@ -640,6 +644,12 @@ class DatasetIndexer(EsIndexer):
             elif key == 'model_run_uuid':
                 data_to_update.update({"model_run_uuid": self.gstore_object.model_run_uuid})
 
+            elif key == 'model_run_name':
+                data_to_update.update({"model_run_name": self.gstore_object.model_run_name})
+
+            elif key == 'model_vars':
+                data_to_update.update({"model_vars": self.gstore_object.model_vars})
+
             elif key == 'parent_model_run_uuid':
                 data_to_update.update({"parent_model_run_uuid": self.gstore_object.parent_model_run_uuid})
 
@@ -736,6 +746,8 @@ class CollectionIndexer(EsIndexer):
         #TODO: this is a list in collections BUT not in datasets so check on the cross-doctype searching against it
         doc.update({"taxonomy": self.gstore_object.taxonomy})
         doc.update({"model_run_uuid": self.gstore_object.model_run_uuid})
+        doc.update({"model_run_name": self.gstore_object.model_run_name})
+        doc.update({"model_vars": self.gstore_object.model_vars})
         doc.update({"parent_model_run_uuid": self.gstore_object.parent_model_run_uuid})
         doc.update({"model_set": self.gstore_object.model_set})
         doc.update({"model_set_type": self.gstore_object.model_set_type})

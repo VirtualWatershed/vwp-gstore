@@ -7,6 +7,7 @@ from sqlalchemy.exc import DBAPIError
 
 from ..models import DBSession
 from ..models.datasets import *
+from ..models.model_runs import *
 from ..models.sources import Source, SourceFile, MapfileSetting
 from ..models.metadata import OriginalMetadata, DatasetMetadata
 from ..models.apps import GstoreApp
@@ -500,6 +501,8 @@ def add_dataset(request):
         'uuid': 
         'taxonomy': 
         'model_run_uuid':
+        'model_run_name':
+        'model_vars':
         'model_set':
         'parent_model_run_uuid':
         'model_set_type':
@@ -570,12 +573,17 @@ def add_dataset(request):
     excluded_formats = get_all_formats(request)
     excluded_services = get_all_services(request)
     excluded_standards = get_all_standards(request)
-
+ 
     #do stuff
     description = post_data['description']
     basename = post_data['basename']
     taxonomy = post_data['taxonomy']
     model_run_uuid = post_data['model_run_uuid']
+#   Get the model name from uuid
+    model_description = DBSession.query(Modelruns).filter(Modelruns.model_run_id==model_run_uuid).first()
+    model_run_name = model_description.description
+    print model_run_name
+    model_vars = post_data['model_vars']
     parent_model_run_uuid = post_data['parent_model_run_uuid']
     model_set = post_data['model_set']
     model_set_type = post_data['model_set_type']
@@ -622,6 +630,8 @@ def add_dataset(request):
     new_dataset.basename = basename
     new_dataset.taxonomy = taxonomy
     new_dataset.model_run_uuid = model_run_uuid
+    new_dataset.model_run_name = model_run_name
+    new_dataset.model_vars = model_vars
     new_dataset.parent_model_run_uuid = parent_model_run_uuid
     new_dataset.model_set = model_set
     new_dataset.model_set_type = model_set_type

@@ -168,6 +168,12 @@ class EsSearcher():
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
 
+        #model run name
+        model_run_name = query_params.get('model_run_name', '') 
+
+        #model_var
+        model_vars = query_params.get('model_vars', '')
+
         #parent model run UUID
         parent_model_run_uuid = query_params.get('parent_model_run_uuid', '')
 
@@ -241,6 +247,10 @@ class EsSearcher():
             ands.append({"query": {"term": {"taxonomy": taxonomy.lower()}}})
         if model_run_uuid:
             ands.append({"query": {"term": {"model_run_uuid": model_run_uuid.lower()}}})
+        if model_run_name:
+            ands.append({"query": {"match": {"model_run_name": {"query": model_run_name, "operator": "and"}}}})
+        if model_vars:
+            ands.append({"query": {"term": {"model_vars": model_vars.lower()}}})
         if parent_model_run_uuid:
             ands.append({"query": {"term": {"parent_model_run_uuid": parent_model_run_uuid.lower()}}})
         if model_set:

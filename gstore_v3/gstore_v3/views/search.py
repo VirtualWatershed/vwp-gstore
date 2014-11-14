@@ -327,6 +327,8 @@ def search_doctypes(request):
     web service (wms|wcs|wfs)
     taxonomy
     model_run_uuid
+    model_run_name
+    model_vars
     model_set
     geomtype
 
