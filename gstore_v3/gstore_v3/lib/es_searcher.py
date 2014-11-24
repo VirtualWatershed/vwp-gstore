@@ -116,9 +116,11 @@ class EsSearcher():
         Raises:
             Exception: returns the es error if the status code isn't 200
         """
-	#HB
+	print "HB"
         #print self.query_data
-
+        print self.es_url 
+        print self.query_data
+        print "HB"
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
         #print results.text
         if results.status_code != 200:
@@ -162,9 +164,12 @@ class EsSearcher():
         #valid dates
         start_valid = query_params.get('valid_start', '')
         start_valid_date = convert_timestamp(start_valid)
+        empty = ""
+
+        #print start_valid_date 2004-10-19 00:00:00
         end_valid = query_params.get('valid_end', '')
         end_valid_date = convert_timestamp(end_valid)
-	
+
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
 
@@ -281,10 +286,21 @@ class EsSearcher():
             range_query = self.build_date_filter('date_added', start_added_date, end_added_date)
             if range_query:
                 ands.append(range_query)
+#Bill and Hays repaired this crap.
 
-        if start_valid_date or end_valid_date:
-            #TODO: this is not the right element name for the indexes
-            range_query = self.build_date_filter('valid_dates', start_valid_date, end_valid_date)
+#        if start_valid_date or end_valid_date:
+#            #TODO: this is not the right element name for the indexes
+#            range_query = self.build_date_filter('valid_dates', start_valid_date, end_valid_date)
+#            if range_query:
+#                ands.append(range_query)
+
+        if start_valid_date:
+            range_query = self.build_date_filter('valid_start.date', start_valid_date, empty)
+            if range_query:
+                ands.append(range_query)
+
+        if end_valid_date:
+            range_query = self.build_date_filter('valid_end.date', empty, end_valid_date)
             if range_query:
                 ands.append(range_query)
 
@@ -313,8 +329,9 @@ class EsSearcher():
             query_request.update({"query": {"filtered": filtered}})
 
         #and add the sort element back in
+        #print query_request
         query_request.update(sorts)
-
+        #print query_request
         #should have a nice es search
         self.query_data = query_request
 
@@ -379,7 +396,7 @@ class EsSearcher():
             range_query = {"lte": end_date.strftime(self.dfmt)}
         if start_date and end_date:
             range_query = {"gte": start_date.strftime(self.dfmt), "lte": end_date.strftime(self.dfmt)}
-            
+        #print range_query
         return {"range": {element: range_query}}
 
 

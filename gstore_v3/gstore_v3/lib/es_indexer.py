@@ -477,7 +477,7 @@ class DatasetIndexer(EsIndexer):
         standards = self.gstore_object.get_standards(self.request)
         repos = self.gstore_object.get_repositories()
         #TODO: metadata standards?
-
+        #print doc
         doc.update({
                 "applications": self.gstore_object.apps_cache, 
                 "formats": formats, 
@@ -544,10 +544,10 @@ class DatasetIndexer(EsIndexer):
         #TODO: ADD THE COLLECTION UUIDs SO THAT WE CAN SEARCH WITHIN COLLECTION
         if self.gstore_object.collections:
             doc.update({"collections": [str(c.uuid) for c in self.gstore_object.collections]})
-
+        print doc
         #self.document = {self.es_description['type']: doc}
         self.document = doc
-
+      
     def build_partial(self, keys_to_update):
         """build a partial dataset document
 
