@@ -1068,7 +1068,7 @@ def update_dataset(request):
             elements_to_update.append("services")
 
         elif key == 'repositories':
-            services = post_data['repositories']
+            repositories = post_data['repositories']
             excluded_repositories = get_all_repositories(request)
             d.excluded_repositories = [s for s in excluded_repositories if s not in repositories]
 
