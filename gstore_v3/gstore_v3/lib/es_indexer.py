@@ -388,6 +388,10 @@ class EsIndexer:
         
         return area, loc
 
+    def build_date_time_element(self, key, datetime_obj):
+        return {key: {"date": datetime_obj.strftime('%Y-%m-%d %H:%M:%S'), "year": datetime_obj.year, "month": datetime_obj.month, "day": datetime_obj.day, "hour": datetime_obj.hour, "minute": datetime_obj.minute, "second": datetime_obj.second}}
+
+
     def build_date_element(self, key, datetime_obj):
         """build a date element
 
@@ -468,9 +472,10 @@ class DatasetIndexer(EsIndexer):
         doc.update(self.build_date_element("date_published", self.gstore_object.date_published))     
 
         if self.gstore_object.begin_datetime:
-            doc.update(self.build_date_element("valid_start", self.gstore_object.begin_datetime))
+            #print self.gstore_object.begin_datetime
+            doc.update(self.build_date_time_element("valid_start", self.gstore_object.begin_datetime))
         if self.gstore_object.end_datetime:
-            doc.update(self.build_date_element("valid_end", self.gstore_object.end_datetime))
+            doc.update(self.build_date_time_element("valid_end", self.gstore_object.end_datetime))
 
         formats = self.gstore_object.get_formats(self.request)
         services = self.gstore_object.get_services(self.request)

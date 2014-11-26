@@ -1,6 +1,6 @@
 import requests
 from ..lib.spatial import *
-from ..lib.utils import convert_timestamp
+from ..lib.utils import convert_timestamp, convert_datetimestamp
 
 from gstore_v3.models import Base, DBSession
 from sqlalchemy import func
@@ -29,6 +29,7 @@ class EsSearcher():
     results = {} 
 
     dfmt = '%Y-%m-%d'
+    dtfmt = '%Y-%m-%d %H:%M:%S'
     srid = 4326
     default_limit = 15
     default_offset = 0
@@ -116,11 +117,11 @@ class EsSearcher():
         Raises:
             Exception: returns the es error if the status code isn't 200
         """
-	print "HB"
+	#print "HB"
         #print self.query_data
-        print self.es_url 
-        print self.query_data
-        print "HB"
+        #print self.es_url 
+        #print self.query_data
+        #print "HB"
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
         #print results.text
         if results.status_code != 200:
@@ -162,13 +163,15 @@ class EsSearcher():
         end_added_date = convert_timestamp(end_added)
 
         #valid dates
-        start_valid = query_params.get('valid_start', '')
-        start_valid_date = convert_timestamp(start_valid)
+        start_valid = query_params.get('timestamp_start', '')
+        start_valid_date = convert_datetimestamp(start_valid)
+        print "start_valid_date: %s" % start_valid_date
         empty = ""
 
         #print start_valid_date 2004-10-19 00:00:00
-        end_valid = query_params.get('valid_end', '')
-        end_valid_date = convert_timestamp(end_valid)
+        end_valid = query_params.get('timestamp_end', '')
+        end_valid_date = convert_datetimestamp(end_valid)
+        print "end_valid_date: %s" % end_valid_date
 
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
@@ -295,12 +298,12 @@ class EsSearcher():
 #                ands.append(range_query)
 
         if start_valid_date:
-            range_query = self.build_date_filter('valid_start.date', start_valid_date, empty)
+            range_query = self.build_date_time_filter('valid_start.date', start_valid_date, empty)
             if range_query:
                 ands.append(range_query)
 
         if end_valid_date:
-            range_query = self.build_date_filter('valid_end.date', empty, end_valid_date)
+            range_query = self.build_date_time_filter('valid_end.date', empty, end_valid_date)
             if range_query:
                 ands.append(range_query)
 
@@ -370,6 +373,21 @@ class EsSearcher():
     '''
     build helpers
     '''
+    def build_date_time_filter(self, element, start_date, end_date):
+        if not start_date and not end_date:
+            return {}
+
+        range_query = {}
+        if start_date and not end_date:
+            range_query = {"gte": start_date.strftime(self.dtfmt)}
+        if not start_date and end_date:
+            range_query = {"lte": end_date.strftime(self.dtfmt)}
+        if start_date and end_date:
+            range_query = {"gte": start_date.strftime(self.dtfmt), "lte": end_date.strftime(self.dtfmt)}
+        print "dtfmt : %s" % self.dtfmt
+        print "range_query : %s" % range_query
+        return {"range": {element: range_query}}
+
     def build_date_filter(self, element, start_date, end_date):
         """build a date filter for an element 
 

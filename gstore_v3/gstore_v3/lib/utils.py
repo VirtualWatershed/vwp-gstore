@@ -516,6 +516,33 @@ def decode_params(params):
 '''
 datetime utils
 '''
+def convert_datetimestamp(in_timestamp):
+    """convert timestamp string to datetime
+
+    Notes:
+        Timestamp as yyyyMMdd{THHMMss} with the time component optional
+
+    Args:
+        in_timestamp (str): timestamp to convert
+
+    Returns:
+        (datetime): parsed timestamp or None
+    
+    Raises:
+    
+    """
+    print "in_timestamp: %s" % in_timestamp
+    sfmt = '%Y-%m-%dT%H:%M:%S'
+    if not in_timestamp:
+        return None
+    try:
+        out_timestamp = datetime.strptime(in_timestamp, sfmt)
+        return out_timestamp
+    except:
+        return None
+
+
+
 def convert_timestamp(in_timestamp):
     """convert timestamp string to datetime
 

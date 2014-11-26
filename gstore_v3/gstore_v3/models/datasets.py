@@ -411,8 +411,9 @@ class Dataset(Base):
             
 
         if self.begin_datetime and self.end_datetime:
+            print self.begin_datetime
             if self.begin_datetime.year >= 1900 and self.end_datetime.year >= 1900:
-                results.update({"valid_dates": {"start": self.begin_datetime.strftime('%Y%m%d'), "end": self.end_datetime.strftime('%Y%m%d')}})
+                results.update({"valid_dates": {"start": self.begin_datetime.strftime('%Y-%m-%d:%H:%M:%S'), "end": self.end_datetime.strftime('%Y-%m-%d:%H:%M:%S')}})
             else:
                 results.update({"valid_dates": {"start": '%s%02d%02d' % (self.begin_datetime.year, self.begin_datetime.month, self.begin_datetime.day), "end": '%s%02d%02d' % (self.end_datetime.year, self.end_datetime.month, self.end_datetime.day)}})
 
