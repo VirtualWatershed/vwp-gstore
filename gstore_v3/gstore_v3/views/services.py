@@ -233,7 +233,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('static', 'no')
         layer.metadata.set('annotation_name', '%s: %s' % (valid_basename, d.dateadded))
         layer.metadata.set('wcs_label', valid_basename)
-        layer.metadata.set('wcs_formats', 'GEOTIFF_16,netCDF,GSAG,ehdr')
+        layer.metadata.set('wcs_formats', 'GEOTIFF_16')
   
         #TODO: change the native format - not everything is a geotiff now
         #layer.metadata.set('wcs_nativeformat', 'GTiff')
