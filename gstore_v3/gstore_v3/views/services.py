@@ -225,6 +225,8 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.setProjection('+init=epsg:%s' % (d.orig_epsg))
         layer.setProcessing('CLOSE_CONNECTION=DEFER')
         layer.type = mapscript.MS_LAYER_RASTER
+#hb
+#        layer.offsite = mapscript.colorObj( 0 , 0 , 0 )
         layer.metadata.set('ows_srs', 'epsg:%s' % (d.orig_epsg))
         layer.metadata.set('queryable', 'no')
         layer.metadata.set('background', 'no')

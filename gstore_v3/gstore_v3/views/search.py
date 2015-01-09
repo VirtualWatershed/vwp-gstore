@@ -353,7 +353,7 @@ def search_doctypes(request):
     params = normalize_params(request.params)
 
     #get version (not for querying, just for the output) 
-    version = int(params.get('version')) if 'version' in params else 2
+    version = int(params.get('version')) if 'version' in params else 3
 
     #and we still like the limit here
     limit = int(params['limit']) if 'limit' in params else 15
