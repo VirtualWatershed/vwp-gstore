@@ -83,7 +83,7 @@ class Dataset(Base):
         Column('license_id', Integer, ForeignKey('gstoredata.licenses.id')),
         Column('date_published', TIMESTAMP),
         Column('uuid', UUID), # we aren't setting this in postgres anymore
-	Column('model_run_uuid', UUID),
+        Column('model_run_uuid', UUID),
         Column('parent_model_run_uuid', UUID),
         Column('model_set', String(50)),
         Column('model_set_type', String(50)),
@@ -595,6 +595,215 @@ class Dataset(Base):
 
         return results
 
+#-----------------------------------------------------------------------------------------------------------------------
+
+    def get_partial_service_dict(self, base_url, req, app):
+        """
+        build the dict for the full service description
+        see the service view, search v3 results
+
+        Notes:
+
+        Args:
+
+        Returns:
+
+        Raises:
+        """
+
+        results = {'type': 'dataset', 'id': self.id, 'model_set_taxonomy': self.model_set_taxonomy, 'model_set_type': self.model_set_type, 'model_set': self.model_set, 'model_run_uuid': self.model_run_uuid, 'model_run_name': self.model_run_name, 'model_vars': self.model_vars, 'parent_model_run_uuid': self.parent_model_run_uuid, 'uuid': self.uuid, 'description': self.description,
+                'lastupdate': self.dateadded.strftime('%Y%m%d'), 'name': self.basename, 'taxonomy': self.taxonomy,
+                'categories': [{'modelname': t.theme, 'location': t.subtheme, 'state': t.groupname} for t in self.categories]}
+        if self.box:
+            results.update({'spatial': {'bbox': string_to_bbox(self.box), 'epsg': self.orig_epsg}})
+
+
+        if self.begin_datetime and self.end_datetime:
+            print self.begin_datetime
+            if self.begin_datetime.year >= 1900 and self.end_datetime.year >= 1900:
+                results.update({"valid_dates": {"start": self.begin_datetime.strftime('%Y-%m-%d:%H:%M:%S'), "end": self.end_datetime.strftime('%Y-%m-%d:%H:%M:%S')}})
+            else:
+                results.update({"valid_dates": {"start": '%s%02d%02d' % (self.begin_datetime.year, self.begin_datetime.month, self.begin_datetime.day), "end": '%s%02d%02d' % (self.end_datetime.year, self.end_datetime.month, self.end_datetime.day)}})
+
+        if self.is_available:
+            dlds = []
+            links = []
+            fmts = self.get_formats(req)
+            svcs = self.get_services(req)
+            #TODO: change the relate to only include active sources
+            srcs = [s for s in self.sources if s.active]
+
+            if self.taxonomy == 'geoimage':
+                #add the downloads by source
+                #TODO: maybe compare to the formats list?
+                dlds = [(s.set, s.extension) for s in srcs] # if not s.is_external]
+
+                #links = [{s.extension: s.get_location()} for s in srcs if s.is_external]
+            elif self.taxonomy in ['vector', 'table']:
+                #get the formats
+                #check for a source
+                #if none, derived + fmt
+                #if one, set + fmt
+                #TODO: what if a vector dataset has external links?
+                for f in fmts:
+                    sf = [s for s in srcs if s.extension == f]
+                    st = sf[0].set if sf else 'derived'
+                    dlds.append((st, f))
+            elif self.taxonomy == 'file':
+                #just the formats
+                for f in fmts:
+                    sf = [s for s in srcs if s.extension == f]
+                    if not sf:
+                        #if it's not in there, that's a whole other problem (i.e. why is it listed in the first place?)
+                        continue
+                    sf = sf[0]
+                    dlds.append((sf.set, f))
+            elif self.taxonomy == 'service':
+                #TODO: figure out what to put here
+                pass
+
+            #combine the links (don't change url) with downloads (build url)
+            qp = '' if self.is_cacheable else '?ignore_cache=True'
+            dlds = [{s[1]: base_url + build_dataset_url(app, self.uuid, self.basename, s[0], s[1]) + qp for s in dlds}] if dlds else []
+            dlds = links + dlds
+
+            #update the wxs services to have the more complete url (version, request, service)
+            svc_list = []
+            for s in svcs:
+                if s in ['rest']:
+#                    #TODO: resolve what this needs to be
+                    continue
+
+                if s in ['wms', 'wfs']:
+                    vsn = '1.1.1' if s == 'wms'  else '1.0.0'
+                else:
+                    vsn = '1.1.2'
+
+                url = base_url + build_ogc_url(app, 'datasets', self.uuid, s, vsn)
+
+                svc_list.append({s: url})
+
+            results.update({'services': svc_list, 'downloads': dlds})
+
+            #add the link to the mapper
+            #TODO: when the mapper moves, get rid of this
+            #DEPRECATED: 5/6/2014 mapper deprecated
+            #if self.taxonomy in ['geoimage', 'vector']:
+            #    results.update({'preview': base_url + build_mapper_url(app, self.uuid)})
+
+        else:
+            #results.update({'services': [], 'downloads': [], 'preview': '', 'availability': False})
+            results.update({'services': [], 'downloads': [], 'availability': False})
+
+
+        if self.gstore_metadata:
+            supported_standards = self.get_standards(req)
+
+            #get the supported formats per standard
+            mt = []
+            for supported_standard in supported_standards:
+                std = DBSession.query(MetadataStandards).filter(MetadataStandards.alias==supported_standard).first()
+                if not std:
+                    continue
+                services = self.get_services(req) if '19119' in supported_standard else []
+
+                mt += std.get_urls(app, 'datasets', base_url, self.uuid, services)
+
+            #TODO: add the date modified back in although it doesn't matter per standard (it's all gstore, so it's all the same date)
+            #     MAYBE ADD SOME KEY? all: date? to go with fgdc: date, iso: date if not gstore-ified?
+            utc = pytz.utc
+            if self.gstore_metadata[0].date_modified:
+                md = {"all": self.gstore_metadata[0].date_modified.astimezone(utc).strftime('%Y-%m-%dT%H:%M:%SZ')}
+            else:
+                md = {}
+
+
+        elif not self.gstore_metadata and self.original_metadata:
+            #TODO: change this to get the standard of the original_metadata if om & xml exists
+            #      where the format is ONLY xml
+
+            '''
+            as {fgdc: {ext: url}}
+
+            + metadata_modified element:
+            metadata_modified: {'fgdc': 'yyyyMMdd', 'iso': 'yyyyMMd'} AS UTC!
+
+            this is not one of the keys under metadata['fgdc'] to avoid borking rgis/epscor
+            '''
+
+            #get any xml for the dataset (ignore those that only have some unknown text blob)
+            om = [o for o in self.original_metadata if o.original_xml]
+            md = {}
+            mt = []
+            for o in om:
+                mt.append({o.original_xml_standard: {"xml": base_url + build_metadata_url(app, 'datasets', self.uuid, o.original_xml_standard, 'xml')}})
+
+#            #get the date-modified by standard
+            utc = pytz.utc
+            md = {}
+            om = [o for o in self.original_metadata]
+            for o in om:
+                #get the standard and the date (2013-01-30 20:23:49.694577-07)
+                if o.date_modified and o.original_xml_standard:
+                    md.update({o.original_xml_standard: o.date_modified.astimezone(utc).strftime('%Y-%m-%dT%H:%M:%SZ')})
+#
+#            mt = [{s: {e: '%s/metadata/%s.%s' % (base_url, s, e) for e in exts} for s in standards}]
+        else:
+            md = {}
+            mt = []
+
+
+        results.update({'metadata': mt})
+
+        if md:
+            results.update({'metadata-modified': md})
+
+
+        #TODO: maybe not this? but maybe add the source links (maybe not though)
+        #check for provenance bases for this app and dataset
+        app_bases = DBSession.query(ProvBase).join(ProvOntology).join(GstoreApp).filter(and_(GstoreApp.route_key==app, ProvBase.dataset_id==self.id)).all()
+
+        if app_bases:
+            '''
+            add the links for the prov OUTPUTS and maybe the original DS?
+            for the app
+
+            "prov": {
+                "ontology": {
+                    "traces": {
+                        "format": url
+                    }
+                }
+            }
+
+            /apps/{app}/datasets/{id:\d+|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/prov/{ontology}.{ext}
+            '''
+            ontologies = {}
+
+            for ab in app_bases:
+                ont = ab.ontologies
+                traces = ontologies[ont.ontology_key] if ont.ontology_key in ontologies else {}
+
+                mappings = DBSession.query(ProvMapping).filter(and_(ProvMapping.ontology_id==ab.ontology_id, ProvMapping.inputstandards_id==ab.inputstandards_id)).all()
+
+                for mapping in mappings:
+                    traces.update({str(mapping.output_format): base_url + build_prov_trace_url(app, self.uuid, ont.ontology_key, str(mapping.output_format))})
+
+                ontologies[ont.ontology_key] = traces
+
+            results.update({"prov": ontologies})
+
+        #TODO: add the html card view also maybe
+
+        #TODO: add related datasets
+
+        #TODO: add link to collections it's in?
+
+        #TODO: add project
+
+        return results
+
+#-----------------------------------------------------------------------------------------------------------------------
 
     def get_index_doc(self, req=None):
         """
