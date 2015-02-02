@@ -53,7 +53,7 @@ def return_no_results(ext='json'):
 doctype response
 '''
 #TODO: replace the streamers here with the other streamer? meh, the other json is a different structure so maybe not.
-def generate_search_response(searcher, request, app, limit, base_url, ext, version=3, lean=0):
+def generate_search_response(searcher, request, app, limit, base_url, ext, version=3):
     """generate the streamer for the search results for doctypes
 
     Notes:
@@ -84,7 +84,7 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
     if ext == 'json':
         json_streamer = StreamDoctypeJson(app, base_url, request, total, version, limit)
         response.content_type = 'application/json'
-        response.app_iter = json_streamer.yield_set(search_objects, limit, lean)
+        response.app_iter = json_streamer.yield_set(search_objects, limit)
     elif ext == 'kml':
         kml_streamer = StreamDoctypeKml(app, base_url) 
         response.content_type = 'application/vnd.google-earth.kml+xml; charset=UTF-8'
@@ -394,103 +394,6 @@ def search_doctypes(request):
     #print hbtest
 
     return generate_search_response(searcher, request, app, limit, base_url, ext, version)
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-#search for any of the doctypes in es
-@view_config(route_name='model_searches')
-def model_search_doctypes(request):
-    """
-
-    PARAMS:
-    limit
-    offset
-    dir (ASC | DESC)
-    start_time yyyyMMddThh:mm:ss
-    end_time
-    valid_start
-    valid_end
-    sort (lastupdate | text |theme | subtheme | groupname) #datasets not sorted by theme|subtheme|groupname?
-    epsg
-    box
-    theme, subtheme, groupname - category
-    query - keyword
-
-    format
-    web service (wms|wcs|wfs)
-    taxonomy
-    model_run_uuid
-    model_run_name
-    model_vars
-    model_set
-    geomtype
-
-    /search/datasets.json?query=property&offset=0&sort=lastupdate&dir=desc&limit=15&theme=Boundaries&subtheme=General&groupname=New+Mexico
-
-    Notes:
-
-    Args:
-
-    Returns:
-
-    Raises:
-    """
-    ext = request.matchdict['ext']
-    app = request.matchdict['app']
-
-    doctypes = request.matchdict['doctypes']
-
-    #reset doctypes from the route-required plural to the doctype-required singular
-    doctypes = ','.join([dt[:-1] for dt in doctypes.split(',')])
-    #print doctypes
-    params = normalize_params(request.params)
-
-    #get version (not for querying, just for the output)
-    version = int(params.get('version')) if 'version' in params else 3
-
-    #and we still like the limit here
-    limit = int(params['limit']) if 'limit' in params else 15
-
-    #set up the elasticsearch search object
-    searcher = EsSearcher(
-        {
-            "host": request.registry.settings['es_root'],
-            "index": request.registry.settings['es_dataset_index'],
-            "type": doctypes,
-            "user": request.registry.settings['es_user'].split(':')[0],
-            "password": request.registry.settings['es_user'].split(':')[-1]
-        }
-    )
-    try:
-        searcher.parse_basic_query(app, params)
-    except Exception as ex:
-        return HTTPBadRequest(json.dumps({"query": searcher.query_data, "msg": ex.message}))
-
-    if 'check' in params:
-        #for testing - get the elasticsearch json request
-        return Response(json.dumps({"search": searcher.get_query(), "url": searcher.es_url}), content_type = 'application/json')
-
-    try:
-        searcher.search()
-    except Exception as ex:
-        return HTTPServerError(ex.message)
-
-    base_url = request.registry.settings['BALANCER_URL']
-
-    #print searcher
-    #print request
-    #print app
-    #print limit
-    #print base_url
-    #print ext
-    #print version
-    #print hbtest
-
-    return generate_search_response(searcher, request, app, limit, base_url, ext, version, 1)
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-
 
 @view_config(route_name='search_within_collection')
 def search_within_collection(request):
@@ -810,7 +713,7 @@ class StreamDoctypeJson():
 
         
 
-    def yield_set(self, object_tuples, limit, lean):
+    def yield_set(self, object_tuples, limit):
         """
 
         Notes:
@@ -829,7 +732,7 @@ class StreamDoctypeJson():
             if object_tuple[1] == 'dataset' and self.version == 2:
                 to_yield = json.dumps(self.build_v2(object_tuple)) + ','
             elif self.version == 3:
-                to_yield = json.dumps(self.build_v3(object_tuple, lean)) + ','
+                to_yield = json.dumps(self.build_v3(object_tuple)) + ','
             else:
                 to_yield = '{},'
 
@@ -886,7 +789,7 @@ class StreamDoctypeJson():
                                 "config": {"id": d.id, "what": "dataset", "taxonomy": d.taxonomy, "formats": fmts, "services": services, "tools": tools},
                                 "box": [float(b) for b in d.box] if d.box else [], "lastupdate": d.dateadded.strftime('%d%m%D')[4:], "id": d.id}
         
-    def build_v3(self, object_tuple, lean):
+    def build_v3(self, object_tuple):
         """
 
         still ridiculous
@@ -908,10 +811,7 @@ class StreamDoctypeJson():
         if not o:
             return {}
 
-        if lean != 0:
-            return o.get_full_service_dict(self.base_url, self.request, self.app)
-        else:
-            return o.get_partial_service_dict(self.base_url, self.request, self.app)
+        return o.get_full_service_dict(self.base_url, self.request, self.app)
 
 class StreamDoctypeKml():
     """generate the kml output for the search results

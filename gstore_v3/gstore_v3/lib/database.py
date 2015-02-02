@@ -8,14 +8,12 @@ from ..models.repositories import Repository
 from ..models.apps import GstoreApp
 from ..models.provenance import ProvOntology
 
-from sqlalchemy import text
-
 '''
 object verification checks
 
 '''    
 
-def get_dataset(dataset_id, lean):
+def get_dataset(dataset_id):
     """return Dataset by ID or UUID
 
     Args:
@@ -32,11 +30,8 @@ def get_dataset(dataset_id, lean):
         clause = Dataset.id==dataset_id
     except:
         clause = Dataset.uuid==dataset_id
-
-    if lean != 0:
-        d = DBSession.query(Dataset).from_statement( text("SELECT uuid, model_run_uuid, model_run_name, description FROM datasets") ).filter(clause).first()
-    else:
-        d = DBSession.query(Dataset).filter(clause).first()
+   
+    d = DBSession.query(Dataset).filter(clause).first()   
     return d
  
 def get_tileindex(tile_id):
