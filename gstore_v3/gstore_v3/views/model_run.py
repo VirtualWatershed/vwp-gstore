@@ -47,7 +47,12 @@ def add_model_id(request):
     dataset_uuid = str(provided_uuid)
     app = request.matchdict['app']
     description=request.json['description']
-    modelrun = Modelruns(model_run_id=provided_uuid, description=description)
+    researcher_name=request.json['researcher_name']
+    model_run_name=request.json['model_run_name']
+    model_keywords=request.json['model_keywords']
+
+    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords)
+#    modelrun = Modelruns(model_run_id=provided_uuid, description=description)
     try:
         DBSession.add(modelrun)
         DBSession.commit()
