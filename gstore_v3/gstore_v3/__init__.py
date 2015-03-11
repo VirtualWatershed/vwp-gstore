@@ -140,7 +140,7 @@ def main(global_config, **settings):
 #to the search
     config.add_route('search_categories', '/apps/{app}/search/categories.json', custom_predicates=(applist,))
     config.add_route('search_features', '/apps/{app}/search/features.json', custom_predicates=(applist,))
-    
+    config.add_route('search_modelruns', '/apps/{app}/search/modelruns.json', custom_predicates=(applist,))
     config.add_route('searches', '/apps/{app}/search/{doctypes}.{ext}', custom_predicates=(applist,))
 
     config.add_route('search_within_collection', '/apps/{app}/search/collection/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/datasets.{ext}', custom_predicates=(applist,))
@@ -211,7 +211,7 @@ def main(global_config, **settings):
     config.add_route('dataset_streaming', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/dataset.{ext}', custom_predicates=(applist,))
     config.add_route('dataset_statistics', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/statistics.{ext}', custom_predicates=(applist,))
 
-    #elasticsearch builder
+    #elasticsearch builde
     config.add_route('dataset_indexer', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/index.json', custom_predicates=(applist,))
 
 #to repository services

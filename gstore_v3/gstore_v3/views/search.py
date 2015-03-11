@@ -18,6 +18,11 @@ from ..models.datasets import (
     Dataset,
     Category
     )
+
+from ..models.model_runs import (
+    Modelruns,
+    )
+
 from ..models.features import Feature
 
 from ..models.vocabs import geolookups
@@ -54,6 +59,7 @@ doctype response
 '''
 #TODO: replace the streamers here with the other streamer? meh, the other json is a different structure so maybe not.
 def generate_search_response(searcher, request, app, limit, base_url, ext, version=3):
+    print "\ngenerate_search_response() function called...."
     """generate the streamer for the search results for doctypes
 
     Notes:
@@ -65,6 +71,7 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
     Raises:
     """
     total = searcher.get_result_total()
+    print "Total results returned: %s" % total
 
     if total < 1:
         return return_no_results(ext)
@@ -93,6 +100,69 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
         return HTTPNotFound()
 
     return response
+
+
+@view_config(route_name='search_modelruns', renderer='json')
+def search_modelruns(request):
+
+#	params = normalize_params(request.params)
+	model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
+        research_name = request.params.get('researcher_name') if 'researcher_name' in request.params else ''
+	keywords = request.params.get('model_keywords') if 'model_keywords' in request.params else ''
+	modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
+	desc = request.params.get('description') if 'description' in request.params else ''
+
+	filter_cond=[]
+
+        if model_uuid:
+                print "Model Run UUID: %s" % model_uuid
+                filter_cond.append(Modelruns.model_run_id==model_uuid)
+
+	if research_name:
+		print "Research Name: %s" % research_name
+                filter_cond.append(Modelruns.researcher_name.contains(research_name))
+#		filter_cond.append("Modelruns.researcher_name=='%s'" % research_name)
+	if keywords:
+		print "Keywords: %s" % keywords
+		filter_cond.append(Modelruns.model_keywords.contains(keywords))
+	if modelName:
+		print "Model Name: %s" % modelName
+		filter_cond.append(Modelruns.model_run_name.contains(modelName))
+#	if model_uuid:
+#		print "Model Run UUID: %s" % model_uuid
+#		filter_cond.append(Modelruns.model_run_id==model_uuid)
+	if desc:
+		print "Description: %s" % desc
+		filter_cond.append(Modelruns.description.contains(desc))
+
+	print "\n\n********************"
+	print "FILTER CONDITIONS: %s" % filter_cond
+	print "******************************\n\n"
+
+	
+	#model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(Modelruns.researcher_name=="William Hudspeth")
+	#model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
+
+	if (filter_cond and len(filter_cond)>=1):
+	    	print "Filter conditions found with 1 parameter..."
+		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
+#	elif (filter_cond and len(filter_cond)>1):
+#		print "Filter conditions found with more than 1 parameter..."	
+#	        #filterString = "and_(%s)" % filterString
+#                model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
+	else:
+		print "Filter conditions not found...printing all records"
+		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
+
+	response = Response(json.dumps({'results': [{'Model Run UUID':i.model_run_id,'Description': i.description,'Model Run Name':i.model_run_name,'Researcher Name': i.researcher_name,'Keywords':i.model_keywords} for i in model_query]}))
+
+    	response.headers['Access-Control-Allow-Origin'] = '*'
+	response.content_type="application/json"
+
+	DBSession.close()
+
+	return response
+
 
 @view_config(route_name='search_categories', renderer='json')
 def search_categories(request):
@@ -347,16 +417,28 @@ def search_doctypes(request):
 
     doctypes = request.matchdict['doctypes']
 
+    print "Function search_doctype() called"
+    print "ext: %s" % ext
+    print "app: %s" % app
+    print "doctypes: %s" % doctypes
+
+
     #reset doctypes from the route-required plural to the doctype-required singular
     doctypes = ','.join([dt[:-1] for dt in doctypes.split(',')])
+    print "doctypes: %s" % doctypes
     #print doctypes
     params = normalize_params(request.params)
+    print "params: %s" % params
 
     #get version (not for querying, just for the output) 
     version = int(params.get('version')) if 'version' in params else 3
 
+    print "version: %s" % version
+
     #and we still like the limit here
     limit = int(params['limit']) if 'limit' in params else 15
+
+    print "limit:%s" % limit
 
     #set up the elasticsearch search object
     searcher = EsSearcher(
@@ -368,6 +450,15 @@ def search_doctypes(request):
             "password": request.registry.settings['es_user'].split(':')[-1]
         }
     )
+
+    #print "searcher"
+    print "Complete ES search URL: %s.... using the following params..." % searcher
+    print "URL root: %s" % request.registry.settings['es_root']
+    print "ES Index: %s" % request.registry.settings['es_dataset_index']
+    print "Doctype: %s" % doctypes
+    print "Username: %s" % request.registry.settings['es_user'].split(':')[0]
+    print "Password: %s" % request.registry.settings['es_user'].split(':')[-1]
+
     try:
         searcher.parse_basic_query(app, params)
     except Exception as ex:
@@ -568,6 +659,7 @@ def search_features(request):
     #go for the dataset query first UNLESS there's a list of datasets
     #then ignore geomtype, theme/subtheme/groupname
     dataset_clauses = [Dataset.inactive==False, "'%s'=ANY(apps_cache)" % (app)]
+    print "test %s" % dataset_clauses
     if geomtype and geomtype.upper() in ['POLYGON', 'POINT', 'LINESTRING', 'MULTIPOLYGON', '3D POLYGON', '3D LINESTRING']:
         dataset_clauses.append(Dataset.geomtype==geomtype.upper())
 
@@ -576,7 +668,6 @@ def search_features(request):
         c = get_overlap_date_clause(Dataset.begin_datetime, Dataset.end_datetime, start_valid, end_valid)
         if c is not None:
             dataset_clauses.append(c)
-
     query = DBSession.query(Dataset.id).filter(and_(*dataset_clauses))
 
     category_clauses = []
