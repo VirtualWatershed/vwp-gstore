@@ -11,8 +11,17 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 categories_datasets = Table('categories_datasets', Base.metadata,
     Column('category_id', Integer, ForeignKey('gstoredata.categories.id')),
     Column('dataset_id', Integer, ForeignKey('gstoredata.datasets.id')),
+    Column('id', Integer, primary_key=True),
     schema='gstoredata'
 )
+
+#class Categories_Datasets(Base):
+#    __table__ = Table('categories_datasets', Base.metadata,
+#    Column('id', Integer, primary_key=True),
+#    Column('category_id', Integer, ForeignKey('gstoredata.categories.id')),
+#    Column('dataset_id', Integer, ForeignKey('gstoredata.datasets.id')),
+#    schema='gstoredata'
+#    )
 
 class Category(Base):
     """original category triplet model
