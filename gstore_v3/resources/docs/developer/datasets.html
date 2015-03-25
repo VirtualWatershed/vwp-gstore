@@ -314,6 +314,72 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                             <p>Coming soon.</p>
                         </div>
                     </li>
+
+                     <li id="delete">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">POST</span>
+                                <span class="http-path">/apps/{app}/deletemodelid</span>
+                                <span class="http-name">Delete model run id and all associated datasets</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Deletes a given model run uuid value, as well as all of the associated dataset records.</p>
+                            <p>The function chests for the existence of the given model uuid parameter in the database, and if present, checks whether the model run id has children model runs and datasets. If a model run uuid is not found, execution returns an error. If the model run id has children model runs and datasets, execution halts and an error is returned.</p>
+
+
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                              <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>rgis, epscor, elseweb, vwp</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h5>Query Parameters</h5>
+                            <h5>Route Parameters</h5>
+                              <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                        <th>Required</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>model_uuid</td>
+                                        <td>Model run uuid value</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                        <td>T (no defaults)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h5>Examples</h5>
+                            <p>Coming soon.</p>
+
+                            <h4>Response</h4>
+                            <p>Coming soon.</p>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
