@@ -58,6 +58,7 @@ class EsSearcher():
         return '<EsSearcher (%s)>' % (self.es_url)
 
     def get_query(self):
+	print "\nsearcher.get_query() function called...."
         """return the search filters 
 
         Notes:
@@ -105,6 +106,7 @@ class EsSearcher():
         return [(i['_id'], i['_type']) for i in self.results['hits']['hits']]
 
     def search(self):
+	print "\nes_searcher.search() function called...."
         """execute the es request
 
         Notes:
@@ -117,22 +119,25 @@ class EsSearcher():
         Raises:
             Exception: returns the es error if the status code isn't 200
         """
-	#print "HB"
+	print "Again, the value of self.query_data: %s" % self.query_data
         #print self.query_data
         #print self.es_url 
         #print self.query_data
-        #print "HB"
+        print "Now we Post the request using json.dumps of self.query_data"
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
-        #print results.text
+	print "results.text"
+        print results.text
         if results.status_code != 200:
             self.results = {}
             raise Exception(results.text)
 
         self.results = results.json()
-        
+	print "print self.results and now returning them to ??()"
+    	print self.results        
         return self.results
 
     def parse_basic_query(self, app, query_params, exclude_fields=[]):
+
         """build the search filter dict 
 
         Notes:
@@ -150,17 +155,29 @@ class EsSearcher():
         limit = int(query_params['limit']) if 'limit' in query_params else self.default_limit
         offset = int(query_params['offset']) if 'offset' in query_params else self.default_offset
 
+	print "\nparse_basic_query() function called from es_searcher.py"
+        print "limit: %s" % limit
+        print "offset: %s" % offset
+
+
         #category
         theme, subtheme, groupname = self.extract_category(query_params)
 
+        print "theme: %s, subtheme: %s, groupname: %s" % (theme,subtheme, groupname)
+
         #keywords
         keyword = query_params.get('query', '').replace('+', '')
+
+        print "keyword: %s" % keyword
+
 
         #date added
         start_added = query_params.get('start_time', '')
         start_added_date = convert_timestamp(start_added)
         end_added = query_params.get('end_time', '')
         end_added_date = convert_timestamp(end_added)
+
+        print "start_added: %s,  end_added: %s" % (start_added_date,end_added_date)
 
         #valid dates
         start_valid = query_params.get('timestamp_start', '')
@@ -171,7 +188,7 @@ class EsSearcher():
         #print start_valid_date 2004-10-19 00:00:00
         end_valid = query_params.get('timestamp_end', '')
         end_valid_date = convert_datetimestamp(end_valid)
-        print "end_valid_date: %s" % end_valid_date
+        print "end_valid_date: %s\n" % end_valid_date
 
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
@@ -204,6 +221,8 @@ class EsSearcher():
         box = query_params.get('box', '')
         epsg = query_params.get('epsg', '')
 
+	print "Query params: %s" % query_params
+
         #sorting
         sort = query_params.get('sort', 'lastupdate')
         if sort not in ['lastupdate', 'description', 'geo_relevance']:
@@ -228,6 +247,8 @@ class EsSearcher():
 
         #build the json data
         query_request = {"size": limit, "from": offset, "fields": self.default_fields}
+        print "Begin building the Query request..."
+        print "query_request: %s" % query_request
 
         # the main query block
         filtered = {}
@@ -334,9 +355,12 @@ class EsSearcher():
         #and add the sort element back in
         #print query_request
         query_request.update(sorts)
-        #print query_request
+        print "\nFinal query request"
+        print query_request
         #should have a nice es search
         self.query_data = query_request
+
+	print "Now printing all self.query_data: %s" % self.query_data
 
     '''
     parse helpers
