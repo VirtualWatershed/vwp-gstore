@@ -384,10 +384,10 @@ def generate_researcher_list(request, ext, app, doctypes, name_contains):
         list = DBSession.query("researcher_name").from_statement( text("SELECT model_runs.researcher_name FROM gstoredata.model_runs" )).all()
 
     base_url = request.registry.settings['BALANCER_URL']
-    researchers = {}
+    researchers = []
     for item in list:
         if item not in researchers:
-            researchers.update(item)
+            researchers.append(item)
 
     response = Response()
 

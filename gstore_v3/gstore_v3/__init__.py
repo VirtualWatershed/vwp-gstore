@@ -36,7 +36,7 @@ def any_of(segment_name, *allowed):
         if info['match'][segment_name] in allowed:
             return True
     return predicate
-applist = any_of('app', 'my_app')
+applist = any_of('app', 'vwp')
 
 #check for the dataset type (original vs. derived) for downloads
 def any_type(segment_name, *allowed):
@@ -141,8 +141,10 @@ def main(global_config, **settings):
     config.add_route('search_categories', '/apps/{app}/search/categories.json', custom_predicates=(applist,))
     config.add_route('search_features', '/apps/{app}/search/features.json', custom_predicates=(applist,))
     config.add_route('search_modelruns', '/apps/{app}/search/modelruns.json', custom_predicates=(applist,))
-    config.add_route('searches', '/apps/{app}/search/{doctypes}.{ext}', custom_predicates=(applist,))
+    #config.add_route('searches', '/apps/{app}/search/{doctypes}.{ext}', custom_predicates=(applist,))
     config.add_route('search_researchers', '/apps/{app}/search/researchers.json', custom_predicates=(applist,))
+    config.add_route('searches', '/apps/{app}/search/{doctypes}.{ext}', custom_predicates=(applist,))
+
 
     config.add_route('search_within_collection', '/apps/{app}/search/collection/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/datasets.{ext}', custom_predicates=(applist,))
     
