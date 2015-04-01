@@ -7,6 +7,7 @@ import sqlalchemy
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import and_, or_, cast
 from sqlalchemy.sql import between
+from sqlalchemy.sql import text
 
 import json
 from datetime import datetime
@@ -373,6 +374,51 @@ def search_categories(request):
     response.content_type="application/json"    
     return response
 
+
+#------------------------------------------------------------------------------
+
+def generate_researcher_list(request, ext, app, doctypes, name_contains):
+    if name_contains:
+        list = DBSession.query("researcher_name").from_statement( text( "SELECT model_runs.researcher_name FROM gstoredata.model_runs WHERE CONTAINS(model_runs.researcher_name, :contains)" ).params(contains=name_contains) ).all();
+    else:
+        list = DBSession.query("researcher_name").from_statement( text("SELECT model_runs.researcher_name FROM gstoredata.model_runs" )).all()
+
+    base_url = request.registry.settings['BALANCER_URL']
+    researchers = {}
+    for item in list:
+        if item not in researchers:
+            researchers.update(item)
+
+    response = Response()
+
+    response.content_type = 'application/json'
+    response.app_iter = json.dumps(researchers)
+
+    return response
+
+
+@view_config(route_name='search_researchers')
+def search_researchers(request):
+    """
+    PARAMS:
+
+    :param request:
+    :return:
+    """
+
+    ext = 'json'
+    app = request.matchdict['app']
+
+    doctypes = 'researchers'
+
+    params = normalize_params(request.params)
+
+    contains = params.get('contains') if 'contains' in params else None
+
+    return generate_researcher_list(request, ext, app, doctypes, contains)
+
+
+#------------------------------------------------------------------------------
 
 #search for any of the doctypes in es 
 @view_config(route_name='searches')
