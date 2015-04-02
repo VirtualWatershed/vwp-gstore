@@ -379,7 +379,8 @@ def search_categories(request):
 
 def generate_researcher_list(request, ext, app, doctypes, name_contains):
     if name_contains:
-        list = DBSession.query("researcher_name").from_statement( text( "SELECT model_runs.researcher_name FROM gstoredata.model_runs WHERE CONTAINS(model_runs.researcher_name, :contains)" ).params(contains=name_contains) ).all();
+        name_contains = '%' + name_contains + '%'
+        list = DBSession.query("researcher_name").from_statement( text( "SELECT model_runs.researcher_name FROM gstoredata.model_runs WHERE model_runs.researcher_name LIKE :contains" ).params(contains=name_contains) ).all();
     else:
         list = DBSession.query("researcher_name").from_statement( text("SELECT model_runs.researcher_name FROM gstoredata.model_runs" )).all()
 
