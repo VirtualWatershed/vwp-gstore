@@ -1,7 +1,7 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPUnprocessableEntity
-
+from pyramid.security import Allow, Authenticated, remember, forget, authenticated_userid, unauthenticated_userid
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import and_, not_, cast
 from sqlalchemy.sql import between
@@ -46,8 +46,9 @@ def check_model_id(request):
     return Response('True')    
 
 
-@view_config(route_name='add_model_id', request_method='POST')
+@view_config(route_name='add_model_id', request_method='POST', permission='add_model_run')
 def add_model_id(request):
+    userid = authenticated_userid(request)
     provided_uuid = generate_uuid4()
     dataset_uuid = str(provided_uuid)
     app = request.matchdict['app']
@@ -55,8 +56,8 @@ def add_model_id(request):
     researcher_name=request.json['researcher_name']
     model_run_name=request.json['model_run_name']
     model_keywords=request.json['model_keywords']
-
-    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords)
+    print userid
+    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords, userid=userid)
 #    modelrun = Modelruns(model_run_id=provided_uuid, description=description)
     try:
         DBSession.add(modelrun)
@@ -77,99 +78,101 @@ def add_model_id(request):
         os.mkdir(output_path)
     return Response(dataset_uuid)
 
-@view_config(route_name='delete_model_id', request_method='POST')
+@view_config(route_name='delete_model_id', request_method='DELETE', permission='delete')
 def delete_model_id(request):
+    print "\nDelete_model_run() view called"
     app = request.matchdict['app']
     model_uuid=request.json['model_uuid']
+    userid = authenticated_userid(request)
 
     print "\nModel run UUID passed in: %s\n" % model_uuid
 
     #First, test whether the passed model_run_uuid is even in the modelruns table
-    model_uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==model_uuid).first()
-    print "\nModel UUID found? %s" % model_uuid_query
-
-    if model_uuid_query:
-	    print "\nModel Run UUID found in the database"
-	    #first, pass in model_run_uuid, and determine whether the model run has children
-	    model_query=DBSession.query(Dataset.id).filter((Dataset.parent_model_run_uuid==model_uuid) & (Dataset.model_run_uuid != Dataset.parent_model_run_uuid)).first()
-
-	    #IF ANYTHING IS RETURNED TO data_query, THEN YOU CANNOT DELETE IT, AND MUST EXIT WITH ERROR, IF NOTHING IS RETURNED, THEN PROCEED TO DELETE THE DATASETS	
-
-	    if not model_query:
-			print "No Children found ----> Deleting all datasets...with the specificed model_run_uuid : %s" % model_uuid
-			data_query=DBSession.query(Dataset.id,Dataset.uuid).filter(Dataset.model_run_uuid==model_uuid)
-
-		        #Search through all of the datasets with matching model_run_uuid and grab the id and the dataset UUID
-		        #then iterate through all records and run each of the delete commands for all of the tables
-			counter=0
-			print "\nDeleting records now..."
-	            	for row in data_query:
-		                datasetID=row[0]
-	        		datasetUUID=row[1]
-	        		print "\nDeleting dataset with ID: %s and dataset UUID: %s" % (datasetID,datasetUUID)
-	        		counter+=1
-
-	                	#DELETE from gstoredata.source_files where source_id in (select id from gstoredata.sources where dataset_id = ####);
-		                q=DBSession.query(Source.id).filter(Source.dataset_id==datasetID).subquery()
-		                s=DBSession.query(SourceFile.source_id).filter(SourceFile.source_id.in_(q)).delete(synchronize_session='fetch')
-		                DBSession.commit()
-
-		                #DELETE from gstoredata.sources where dataset_id = 8765;
-		                t=DBSession.query(Source.dataset_id).filter(Source.dataset_id==datasetID).delete()
-		                DBSession.commit()
-		
-	        	        #DELETE from gstoredata.metadata where dataset_id = 8765;
-		                u=DBSession.query(DatasetMetadata.dataset_id).filter(DatasetMetadata.dataset_id==datasetID).delete()
-		                DBSession.commit()
-	
-		                #DELETE from gstoredata.original_metadata where dataset_id = 8765;
-		                m=DBSession.query(OriginalMetadata.dataset_id).filter(OriginalMetadata.dataset_id==datasetID).delete()
-		                DBSession.commit()
-	
-		                #DELETE from gstoredata.projects_datasets where dataset_id = 8765;
-	        		#THERE ARE NO RECORDS IN THIS TABLE, SO IT APPEARS NOT TO BE WORKING FOR DATASET INSERTS
-
-	        		#DELETE from gstoredata.categories_datasets where dataset_id = 8765;
-				#This delete is called differently, because we are importing a table and NOT a class (e.g. categories_datasets from ../models/categories.py)
-				cd=categories_datasets.delete(categories_datasets.c.dataset_id==datasetID)
-				cd.execute()
-	
-	        		#DELETE from gstoredata.datasets where id = 8765;
-	        		d=DBSession.query(Dataset.id,Dataset.uuid).filter(Dataset.id==datasetID).delete()
-	        		DBSession.commit()
-
-	        		#Finally, delete dataset record from elasticSearch
-		                es_root=request.registry.settings['es_root']
-		                es_dataset_index=request.registry.settings['es_dataset_index']
-		                es_dbuser=request.registry.settings['es_dbuser']
-		                es_dbpass=request.registry.settings['es_dbpass']
-		                #print "es_root:%s  es_dbuser:%s es_dbpass:%s  es_dataset_index:%s" % (es_root,es_dbuser,es_dbpass,es_dataset_index)
-		                dbURL=os.path.join(es_root,es_dataset_index,"dataset",datasetUUID)
-		                #print "dbURL: %s" % dbURL
-		                r = requests.delete(dbURL, auth=(es_dbuser,es_dbpass))
-		                print "Deleting from elasticSearch dataset no. %s with status code: %s" % (datasetID,r.status_code)
-
-		        print "Datasets deleted: %s" % counter
-
-		        #Now delete the model_run_uuid from the models table
-	        	y=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==model_uuid).delete()
-			DBSession.commit()
-	        	print "\nDeleting model run record from model_runs table......%s" % model_uuid
-			deletedModelRun="Deleted model run uuid: %s" % model_uuid
-			return Response(deletedModelRun)	
-
-	    #if the model run has children equal to the passed model_run_uuid, then do nothing and exit
-	    else:
-			print "Children FOUND.....cannot delete this model run"
-			return HTTPUnprocessableEntity("The requested model run has dependent children datasets and cannot be deleted")
-
-
+    full_model_query=DBSession.query(Modelruns.model_run_id,Modelruns.userid).filter((Modelruns.model_run_id==model_uuid) & (Modelruns.userid==userid)).first()
+    userid_query=DBSession.query(Modelruns.userid).filter(Modelruns.userid==userid).first()
+    uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==model_uuid).first()
+    
+    if(full_model_query==None):
+        if(userid_query==None):  
+            return HTTPUnprocessableEntity("The userid is not associated with any model runs")            
+        else:
+            if(uuid_query==None):
+                return HTTPUnprocessableEntity("The model run uuid is not located in the list of model runs")
+            else:
+                return HTTPUnprocessableEntity("The model run exists, but you are not the owner and cannot delete this model run")
     else:
-         #if not found, return error
-            return HTTPUnprocessableEntity("The requested model run could not be found in the database")
-            print "\nThe requested model run uuid was not found in the database"
+            
+	      print "\nModel Run UUID found in the database"
+	      #first, pass in model_run_uuid, and determine whether the model run has children
+	      model_query=DBSession.query(Dataset.id).filter((Dataset.parent_model_run_uuid==model_uuid) & (Dataset.model_run_uuid != Dataset.parent_model_run_uuid)).first()
 
+	      #IF ANYTHING IS RETURNED TO data_query, THEN YOU CANNOT DELETE IT, AND MUST EXIT WITH ERROR, IF NOTHING IS RETURNED, THEN PROCEED TO DELETE THE DATASETS	
 
+	      if not model_query:
+			  print "No Children found ----> Deleting all datasets...with the specificed model_run_uuid : %s" % model_uuid
+			  data_query=DBSession.query(Dataset.id,Dataset.uuid).filter(Dataset.model_run_uuid==model_uuid)
 
-	    #http://129.24.196.23/apps/my_app/search/datasets.json?model_run_uuid=3082549e-e3ab-41ef-80f7-5fecde378158
+			  #Search through all of the datasets with matching model_run_uuid and grab the id and the dataset UUID
+			  #then iterate through all records and run each of the delete commands for all of the tables
+			  counter=0
+			  print "\nDeleting records now..."
+			  for row in data_query:
+				  datasetID=row[0]
+				  datasetUUID=row[1]
+				  print "\nDeleting dataset with ID: %s and dataset UUID: %s" % (datasetID,datasetUUID)
+				  counter+=1
+
+				  #DELETE from gstoredata.source_files where source_id in (select id from gstoredata.sources where dataset_id = ####);
+				  q=DBSession.query(Source.id).filter(Source.dataset_id==datasetID).subquery()
+				  s=DBSession.query(SourceFile.source_id).filter(SourceFile.source_id.in_(q)).delete(synchronize_session='fetch')
+				  DBSession.commit()
+
+				  #DELETE from gstoredata.sources where dataset_id = 8765;
+				  t=DBSession.query(Source.dataset_id).filter(Source.dataset_id==datasetID).delete()
+				  DBSession.commit()
+		  
+				  #DELETE from gstoredata.metadata where dataset_id = 8765;
+				  u=DBSession.query(DatasetMetadata.dataset_id).filter(DatasetMetadata.dataset_id==datasetID).delete()
+				  DBSession.commit()
+	  
+				  #DELETE from gstoredata.original_metadata where dataset_id = 8765;
+				  m=DBSession.query(OriginalMetadata.dataset_id).filter(OriginalMetadata.dataset_id==datasetID).delete()
+				  DBSession.commit()
+	  
+				  #DELETE from gstoredata.projects_datasets where dataset_id = 8765;
+				  #THERE ARE NO RECORDS IN THIS TABLE, SO IT APPEARS NOT TO BE WORKING FOR DATASET INSERTS
+
+				  #DELETE from gstoredata.categories_datasets where dataset_id = 8765;
+				  #This delete is called differently, because we are importing a table and NOT a class (e.g. categories_datasets from ../models/categories.py)
+				  cd=categories_datasets.delete(categories_datasets.c.dataset_id==datasetID)
+				  cd.execute()
+	  
+				  #DELETE from gstoredata.datasets where id = 8765;
+				  d=DBSession.query(Dataset.id,Dataset.uuid).filter(Dataset.id==datasetID).delete()
+				  DBSession.commit()
+
+				  #Finally, delete dataset record from elasticSearch
+				  es_root=request.registry.settings['es_root']
+				  es_dataset_index=request.registry.settings['es_dataset_index']
+				  es_dbuser=request.registry.settings['es_dbuser']
+				  es_dbpass=request.registry.settings['es_dbpass']
+				  #print "es_root:%s  es_dbuser:%s es_dbpass:%s  es_dataset_index:%s" % (es_root,es_dbuser,es_dbpass,es_dataset_index)
+				  dbURL=os.path.join(es_root,es_dataset_index,"dataset",datasetUUID)
+				  #print "dbURL: %s" % dbURL
+				  r = requests.delete(dbURL, auth=(es_dbuser,es_dbpass))
+				  print "Deleting from elasticSearch dataset no. %s with status code: %s" % (datasetID,r.status_code)
+
+			  print "Datasets deleted: %s" % counter
+
+			  #Now delete the model_run_uuid from the models table
+			  y=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==model_uuid).delete()
+			  DBSession.commit()
+			  print "\nDeleting model run record from model_runs table......%s" % model_uuid
+			  deletedModelRun="Deleted model run uuid: %s" % model_uuid
+			  return Response(deletedModelRun)	
+
+	      #if the model run has children equal to the passed model_run_uuid, then do nothing and exit
+	      else:
+			  print "Children FOUND.....cannot delete this model run"
+			  return HTTPUnprocessableEntity("The requested model run has dependent children datasets and cannot be deleted")
 

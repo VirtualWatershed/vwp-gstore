@@ -17,6 +17,7 @@ class Modelruns(Base):
         Column('model_run_id', UUID, FetchedValue()),
         Column('description', String(500)),
         Column('researcher_name', String(100)),
+        Column('userid', String(100)),
         Column('model_run_name', String(300)),
         Column('model_keywords', String(500)),
         Column('start_date', TIMESTAMP, FetchedValue()),
@@ -25,10 +26,11 @@ class Modelruns(Base):
         schema = 'gstoredata'
     )
 
-    def __init__(self, model_run_id, description, researcher_name,model_run_name,model_keywords):
+    def __init__(self, model_run_id, description, researcher_name,userid,model_run_name,model_keywords):
         self.model_run_id, = model_run_id,
         self.description = description,
         self.researcher_name=researcher_name,
+        self.userid=userid,
         self.model_run_name=model_run_name,
         self.model_keywords=model_keywords,
 

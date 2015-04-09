@@ -1,11 +1,15 @@
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
-
 from pyramid.response import Response
 from pyramid.view import notfound_view_config
 from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented
 
+#for auth
+from pyramid.view import view_config
+from pyramid.security import Allow, Authenticated, remember, forget
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 
 from .models import DBSession
 
@@ -36,7 +40,7 @@ def any_of(segment_name, *allowed):
         if info['match'][segment_name] in allowed:
             return True
     return predicate
-applist = any_of('app', 'my_app')
+applist = any_of('app', 'vwp')
 
 #check for the dataset type (original vs. derived) for downloads
 def any_type(segment_name, *allowed):
@@ -85,14 +89,19 @@ def add_cleanup_callback(event):
     event.request.add_finished_callback(cleanup_callback)    
 
 
+class RootFactory(object):
+    def __init__(self, request):
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'createuser')]
+
 '''
 all the routing
 '''
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    
-    config = Configurator(settings=settings)    
+    authn_policy = AuthTktAuthenticationPolicy('EDACsecret')
+    authz_policy = ACLAuthorizationPolicy()
+    config = Configurator(root_factory=RootFactory,authentication_policy=authn_policy,authorization_policy=authz_policy,settings=settings)    
     config.include('pyramid_chameleon')
     config.include('pyramid_mako')
     config.scan('.models')
@@ -109,6 +118,12 @@ def main(global_config, **settings):
     config.add_static_view(name='docs', path='gstore_v3:../resources/docs')
 
     config.add_route('home', '/')    
+
+#auth routes
+    config.add_route('private', '/private')
+    config.add_route('createuser', '/createuser')
+    config.add_route('login', '/login')
+    config.add_route('logout', '/logout')
 
 #app routes (stats, etc)
     config.add_route('app_stats', 'apps/{app}/statistics/{stat}.{ext}', custom_predicates=(applist,))
@@ -200,7 +215,7 @@ def main(global_config, **settings):
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')
-    config.add_route('delete_model_id', '/apps/{app}/deletemodelid', request_method='POST')
+    config.add_route('delete_model_id', '/apps/{app}/deletemodelid', request_method='DELETE')
 
    #use the integer dataset_id or the uuid
     config.add_route('dataset', '/apps/{app}/datasets/{id:\d+|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/{basename}.{type}.{ext}', custom_predicates=(applist, typelist,))
