@@ -24,8 +24,8 @@ def delete(request):
     print authenticated_userid(request)
     return Response('This is for testing auth.')
 
-@view_config(route_name='createuser', permission='createuser')
-def createuser(request):
+@view_config(route_name='apicreateuser', permission='createuser')
+def apicreateuser(request):
     userid = request.params['userid']
     firstname = request.params['firstname']
     lastname = request.params['lastname']
@@ -42,7 +42,6 @@ def createuser(request):
     salt = os.urandom(33).encode('base_64')
     hashed_password = hashlib.sha512(password + salt).hexdigest()    
 
-    print "city: %s" % city
 
     existUser=DBSession.query(Users.userid).filter(Users.userid==userid).first()
     print "Existing user?: %s" % existUser
@@ -66,6 +65,88 @@ def createuser(request):
 
 #****************************************************************************************************************
 
+@view_config(route_name='createuser', renderer='../templates/createuser.pt', permission='createuser')
+def createuser(request):
+
+        login_url = request.route_url('createuser')
+        referrer = request.url
+        if referrer == login_url:
+            referrer = '/'
+        came_from = request.params.get('came_from', referrer)
+        firstname = ''
+        lastname = ''
+        email = ''
+        address1 = ''
+        address2 = ''
+        city = ''
+        state = ''
+        zipcode = ''
+        tel_voice = ''
+        tel_fax = ''
+        country = ''
+        message = ''
+        userid = ''
+        password = ''
+        if 'form.submitted' in request.params:
+            userid = request.params['userid']
+            password = request.params['password']
+            firstname = request.params['firstname']
+            lastname = request.params['lastname']
+            email = request.params['email']
+            password = request.params['password']
+            address1 = request.params['address1']
+            address2 = request.params['address2']
+            city = request.params['city']
+            state = request.params['state']
+            zipcode = request.params['zipcode']
+            tel_voice = request.params['tel_voice']
+            tel_fax = request.params['tel_fax']
+            country = request.params['country']
+            salt = os.urandom(33).encode('base_64')
+            hashed_password = hashlib.sha512(password + salt).hexdigest()
+
+            logmessage="User created: %s" % userid
+            print logmessage
+            existUser=DBSession.query(Users.userid).filter(Users.userid==userid).first()
+            print "Existing user?: %s" % existUser
+
+            if(existUser):
+                print "Can't add %s, User already exists" % userid
+                message="Can't add user, userid exists in database"
+            else:
+                newuser = Users(userid=userid,firstname=firstname,lastname=lastname,city=city,address1=address1,address2=address2,state=state,zipcode=zipcode,tel_voice=tel_voice,tel_fax=tel_fax,country=country,email=email,salt=salt,password=hashed_password)
+                try:
+                    DBSession.add(newuser)
+                    DBSession.commit()
+                    DBSession.flush()
+                    DBSession.refresh(newuser)
+                    message="User created: %s" % userid
+
+                except Exception as err:
+                    return HTTPServerError(err)
+
+
+        return dict(
+            url = request.application_url + '/createuser',
+            came_from = came_from,
+            firstname = firstname,
+            lastname = lastname,
+            email = email,
+            address1 = address1,
+            address2 = address2,
+            city = city,
+            state = state,
+            zipcode = zipcode,
+            tel_voice = tel_voice,
+            tel_fax = tel_fax,
+            country = country,
+            message = message,
+            userid = userid,
+            password = password,
+            )
+
+
+#****************************************************************************************************************
 @view_config(route_name='login', renderer='../templates/login.pt')
 @forbidden_view_config(renderer='../templates/login.pt')
 def login(request):
@@ -82,8 +163,6 @@ def login(request):
         if 'form.submitted' in request.params:
             formuserid = request.params['login']
             formpassword = request.params['password']
-            print formuserid
-            print formpassword
 
             checkuser = DBSession.query(Users.userid,Users.salt,Users.password).filter(Users.userid==formuserid).first()
 
