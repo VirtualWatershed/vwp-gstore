@@ -1,12 +1,12 @@
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.view import forbidden_view_config
 from pyramid.config import Configurator
 from pyramid.security import Allow, Authenticated, remember, forget, authenticated_userid, unauthenticated_userid
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from paste.httpheaders import AUTHORIZATION
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPUnprocessableEntity
-
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPUnprocessableEntity, HTTPUnauthorized
 from ..models import DBSession
 from ..models.users import (
     Users,
@@ -64,12 +64,64 @@ def createuser(request):
 	    except Exception as err:
 	        return HTTPServerError(err)
 
+#****************************************************************************************************************
+
+@view_config(route_name='login', renderer='../templates/login.pt')
+@forbidden_view_config(renderer='../templates/login.pt')
+def login(request):
+
+        login_url = request.route_url('login')
+        referrer = request.url
+        if referrer == login_url:
+            referrer = '/' # never use the login form itself as came_from
+        came_from = request.params.get('came_from', referrer)
+        message = ''
+        userid = ''
+        login = ''
+        password = ''
+        if 'form.submitted' in request.params:
+            formuserid = request.params['login']
+            formpassword = request.params['password']
+            print formuserid
+            print formpassword
+
+            checkuser = DBSession.query(Users.userid,Users.salt,Users.password).filter(Users.userid==formuserid).first()
+
+            if(checkuser==None):
+                message = 'Bad username or password.'
+
+            else:
+
+                username=checkuser[0]
+                salt=checkuser[1]
+                passwd=checkuser[2]
+
+                hashed_password = hashlib.sha512(formpassword + salt).hexdigest()
+                #if the passwords match then you get a cookie
+                if formuserid == username and hashed_password==passwd:
+                    headers = remember(request, formuserid)
+                 #   return Response('Logged in as %s' % formuserid, headers=headers)
+                    message = 'Logged in as %s' % formuserid
+                    return HTTPFound(location = came_from, headers = headers)
+                else:
+                    message = 'Bad username or password'
+                    #return Response('Bad username or password')
+
+
+        return dict(
+            message = message,
+            url = request.application_url + '/login',
+            came_from = came_from,
+            login = login,
+            password = password,
+            )
+
 
 
 #****************************************************************************************************************
 
-@view_config(route_name='login')
-def login(request):
+@view_config(route_name='apilogin')
+def apilogin(request):
     formuserid = request.params.get('userid') if 'userid' in request.params else ''
     formpassword = request.params.get('password') if 'password' in request.params else ''
     auth = request.environ.get('HTTP_AUTHORIZATION') 
@@ -99,18 +151,21 @@ def login(request):
 
 	#query database with userid and return hash and salt
 	checkuser = DBSession.query(Users.userid,Users.salt,Users.password).filter(Users.userid==userid).first()
-	username=checkuser[0]
-        salt=checkuser[1]
-	passwd=checkuser[2]
-    	
-        hashed_password = hashlib.sha512(password + salt).hexdigest()
+        if(checkuser==None):
+            return HTTPUnauthorized("Bad username or password.")
+
+        else:
+            username=checkuser[0]
+            salt=checkuser[1]
+	    passwd=checkuser[2]
+            hashed_password = hashlib.sha512(password + salt).hexdigest()
 
         if userid == username and hashed_password==passwd:
 
             headers = remember(request, userid)
             return Response('Logged in as %s' % userid, headers=headers)
         else:
-            return Response('Bad username or password')
+            return HTTPUnauthorized('Bad username or password')
 
 
     #else if the user is using form based auth with the user and pass as part of the url...
@@ -118,17 +173,20 @@ def login(request):
 
         #query database with userid and return hash and salt
         checkuser = DBSession.query(Users.userid,Users.salt,Users.password).filter(Users.userid==formuserid).first()
-        username=checkuser[0]
-        salt=checkuser[1]
-        passwd=checkuser[2]
+        if(checkuser==None):
+            return HTTPUnauthorized("Bad username or password.")
 
-        hashed_password = hashlib.sha512(formpassword + salt).hexdigest()
+        else:
+            username=checkuser[0]
+            salt=checkuser[1]
+            passwd=checkuser[2]
+            hashed_password = hashlib.sha512(formpassword + salt).hexdigest()
         #if the passwords match then you get a cookie
         if formuserid == username and hashed_password==passwd:
             headers = remember(request, formuserid)
             return Response('Logged in as %s' % formuserid, headers=headers)
         else:
-            return Response('Bad username or password')
+            return HTTPUnauthorized('Bad username or password')
     #if neither are givin...
     else:
         return Response('A username and password is required')

@@ -3,9 +3,11 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 from pyramid.response import Response
 from pyramid.view import notfound_view_config
-from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented
+from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented, HTTPUnauthorized
+
 
 #for auth
+from pyramid.view import forbidden_view_config
 from pyramid.view import view_config
 from pyramid.security import Allow, Authenticated, remember, forget
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -114,8 +116,11 @@ def main(global_config, **settings):
     #pointer to the static xslts
     config.add_static_view(name='xslts', path='gstore_v3:../resources/xslts')
 
+    config.add_static_view(name='static', path='gstore_v3:./static')
     #pointer to the static documentation
     config.add_static_view(name='docs', path='gstore_v3:../resources/docs')
+
+    config.add_static_view(name='developer', path='gstore_v3:../resources/devdocs', permission='test')
 
     config.add_route('home', '/')    
 
@@ -123,6 +128,7 @@ def main(global_config, **settings):
     config.add_route('private', '/private')
     config.add_route('createuser', '/createuser')
     config.add_route('login', '/login')
+    config.add_route('apilogin', '/apilogin')
     config.add_route('logout', '/logout')
 
 #app routes (stats, etc)
