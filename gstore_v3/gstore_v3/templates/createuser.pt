@@ -8,7 +8,7 @@
   <meta name="keywords" content="python web application" />
   <meta name="description" content="pyramid web application" />
   <link rel="stylesheet"
-        href="/static/vwp.css"
+        href="/static/vwptall.css"
         type="text/css" media="screen" charset="utf-8" />
   <!--[if lte IE 6]>
   <link rel="stylesheet"
