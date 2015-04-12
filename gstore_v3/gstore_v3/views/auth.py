@@ -29,7 +29,6 @@ def delete(request):
 @view_config(route_name='changemypassword', renderer='../templates/changemypassword.pt', permission='loggedin')
 def changemypassword(request):
     userid = authenticated_userid(request)
-    #print userid
     login_url = request.route_url('changemypassword')
     referrer = request.url
     if referrer == login_url:
@@ -39,7 +38,6 @@ def changemypassword(request):
     password = ''
     newpassword1 = ''
     newpassword2 = ''
-
     if 'form.submitted' in request.params:
         providedpassword = request.params['password']
         newpassword1 = request.params['newpassword1']
@@ -54,7 +52,7 @@ def changemypassword(request):
             if hashed_password==currentpassword:
                 updatecurrentuser = DBSession.query(Users.password).filter(Users.userid==userid).update({'password': new_hashed_password})
                 DBSession.commit()
-                 print "user %s changed password" % userid
+                print "user %s changed password" % userid
                 
                 headers = forget(request)
                 return HTTPFound(location = came_from, headers = headers)
