@@ -16,6 +16,10 @@ import binascii
 import base64
 import hashlib
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 
 #*********************************************************************************************************************
 
@@ -26,6 +30,65 @@ def delete(request):
     return Response('This is for testing auth.')
 #********************************************************************************************************************
 
+@view_config(route_name='forgotpassword', renderer='../templates/forgotpassword.pt')
+def forgotpassword(request):
+    email = ''
+    message = ''
+
+    if 'form.submitted' in request.params:
+        email = request.params['email']
+        checkemail = DBSession.query(Users.userid,Users.salt).filter(Users.email==email).first()
+        if(checkemail==None):
+            message = 'email address not found'
+        else:
+            
+            message = 'email has been sent to %s' % email
+            me = "root@edacmail.unm.edu"
+            you = email
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = "VWP password reset"
+            msg['From'] = me
+            msg['To'] = you
+            resetcode = "fart"
+            reseturl="https://vwp-dev.unm.edu/%s" % resetcode
+            # Create the body of the message (a plain-text and an HTML version).
+            text = "Someone has requested a link to change your password.\nYou can reset by using the link below:\n%s" % reseturl
+            html = """\
+            <html>
+             <head></head>
+              <body>
+               <p>Someone has requested a link to change your password.<br>
+                You can reset your password by clicking the link below:<br>
+                %s
+               </p>
+              </body>
+             </html>
+            """ % reseturl
+
+            # Record the MIME types of both parts - text/plain and text/html.
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+
+            # Attach parts into message container.
+            msg.attach(part1)
+            msg.attach(part2)
+
+            # Send the message via local SMTP server.
+            s = smtplib.SMTP('localhost')
+            # sendmail function takes 3 arguments: sender's address, recipient's address
+            s.set_debuglevel(1)
+            s.sendmail(me, you, msg.as_string())
+            s.quit()
+
+
+    return dict(
+        message = message,
+        url = request.application_url + '/forgotpassword',
+        email = email,
+        )
+
+
+#********************************************************************************************************************
 @view_config(route_name='changemypassword', renderer='../templates/changemypassword.pt', permission='loggedin')
 def changemypassword(request):
     userid = authenticated_userid(request)
