@@ -22,7 +22,61 @@ import os
 @view_config(route_name='private', permission='test')
 def delete(request):
     print authenticated_userid(request)
+
     return Response('This is for testing auth.')
+#********************************************************************************************************************
+
+@view_config(route_name='changemypassword', renderer='../templates/changemypassword.pt', permission='loggedin')
+def changemypassword(request):
+    userid = authenticated_userid(request)
+    #print userid
+    login_url = request.route_url('changemypassword')
+    referrer = request.url
+    if referrer == login_url:
+        referrer = '/' # never use the login form itself as came_from
+    came_from = request.params.get('came_from', referrer)
+    message = ''
+    password = ''
+    newpassword1 = ''
+    newpassword2 = ''
+
+    if 'form.submitted' in request.params:
+        providedpassword = request.params['password']
+        newpassword1 = request.params['newpassword1']
+        newpassword2 = request.params['newpassword2']
+        if newpassword1==newpassword2:
+            currentuser = DBSession.query(Users.salt,Users.password).filter(Users.userid==userid).first()
+            salt=currentuser.salt
+            currentpassword=currentuser.password
+            hashed_password = hashlib.sha512(providedpassword + salt).hexdigest()
+            new_hashed_password = hashlib.sha512(newpassword1 + salt).hexdigest()
+            #if the password matches, then we will change your password to newpassword1
+            if hashed_password==currentpassword:
+                updatecurrentuser = DBSession.query(Users.password).filter(Users.userid==userid).update({'password': new_hashed_password})
+                DBSession.commit()
+                 print "user %s changed password" % userid
+                
+                headers = forget(request)
+                return HTTPFound(location = came_from, headers = headers)
+                message = 'Password has changed, and you have been logged out. Please login with your new password.'
+            else:
+                    message = 'That is not your current password'
+        else:
+            message = 'Failed to reset password: you need to type your new password twice.'
+
+    return dict(
+        message = message,
+        url = request.application_url + '/changemypassword',
+        came_from = came_from,
+        password = password,
+        newpassword1 = newpassword1,
+        newpassword2 = newpassword2,
+        )
+
+
+
+
+#*********************************************************************************************************************
 
 @view_config(route_name='apicreateuser', permission='createuser')
 def apicreateuser(request):
@@ -171,9 +225,9 @@ def login(request):
 
             else:
 
-                username=checkuser[0]
-                salt=checkuser[1]
-                passwd=checkuser[2]
+                username=checkuser.userid
+                salt=checkuser.salt
+                passwd=checkuser.password
 
                 hashed_password = hashlib.sha512(formpassword + salt).hexdigest()
                 #if the passwords match then you get a cookie
@@ -234,9 +288,9 @@ def apilogin(request):
             return HTTPUnauthorized("Bad username or password.")
 
         else:
-            username=checkuser[0]
-            salt=checkuser[1]
-	    passwd=checkuser[2]
+            username=checkuser.userid
+            salt=checkuser.salt
+	    passwd=checkuser.password
             hashed_password = hashlib.sha512(password + salt).hexdigest()
 
         if userid == username and hashed_password==passwd:
@@ -256,9 +310,9 @@ def apilogin(request):
             return HTTPUnauthorized("Bad username or password.")
 
         else:
-            username=checkuser[0]
-            salt=checkuser[1]
-            passwd=checkuser[2]
+            username=checkuser.userid
+            salt=checkuser.salt
+            passwd=checkuser.password
             hashed_password = hashlib.sha512(formpassword + salt).hexdigest()
         #if the passwords match then you get a cookie
         if formuserid == username and hashed_password==passwd:

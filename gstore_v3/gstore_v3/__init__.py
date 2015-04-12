@@ -93,7 +93,7 @@ def add_cleanup_callback(event):
 
 class RootFactory(object):
     def __init__(self, request):
-        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'createuser')]
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin')]
 
 '''
 all the routing
@@ -131,6 +131,7 @@ def main(global_config, **settings):
     config.add_route('apilogin', '/apilogin')
     config.add_route('logout', '/logout')
     config.add_route('apicreateuser', '/apicreateuser')##not sure we want this.
+    config.add_route('changemypassword','/changemypassword')
 #app routes (stats, etc)
     config.add_route('app_stats', 'apps/{app}/statistics/{stat}.{ext}', custom_predicates=(applist,))
     
