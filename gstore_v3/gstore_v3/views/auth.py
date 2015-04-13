@@ -30,8 +30,8 @@ def delete(request):
     return Response('This is for testing auth.')
 #********************************************************************************************************************
 
-@view_config(route_name='forgotpassword', renderer='../templates/forgotpassword.pt')
-def forgotpassword(request):
+@view_config(route_name='passwordreset', renderer='../templates/passwordreset.pt')
+def passwordreset(request):
     email = ''
     message = ''
 
@@ -83,7 +83,7 @@ def forgotpassword(request):
 
     return dict(
         message = message,
-        url = request.application_url + '/forgotpassword',
+        url = request.application_url + '/passwordreset',
         email = email,
         )
 

@@ -132,7 +132,7 @@ def main(global_config, **settings):
     config.add_route('logout', '/logout')
     config.add_route('apicreateuser', '/apicreateuser')##not sure we want this.
     config.add_route('changemypassword','/changemypassword')
-    config.add_route('forgotpassword','/forgotpassword')
+    config.add_route('passwordreset','/passwordreset')
 #app routes (stats, etc)
     config.add_route('app_stats', 'apps/{app}/statistics/{stat}.{ext}', custom_predicates=(applist,))
     
