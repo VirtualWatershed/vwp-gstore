@@ -454,8 +454,7 @@ def indexer(request):
 
 
 
-#HB
-@view_config(route_name='add_data', request_method='POST')
+@view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
     filename = request.POST['file'].filename
     input_file = request.POST['file'].file
@@ -485,7 +484,7 @@ def add_data(request):
 '''
 dataset maintenance
 '''
-@view_config(route_name='add_dataset', request_method='PUT')
+@view_config(route_name='add_dataset', request_method='PUT', permission='add_dataset')
 def add_dataset(request):
     """
 
@@ -750,7 +749,6 @@ def add_dataset(request):
         settings = src['settings'] if 'settings' in src else {}
 
         files = src['files']
-#HB
         for f in files:
             print f
             #check if the file in the datasets is there.
