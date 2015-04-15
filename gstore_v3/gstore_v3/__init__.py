@@ -90,10 +90,14 @@ def cleanup_callback(request):
 def add_cleanup_callback(event):
     event.request.add_finished_callback(cleanup_callback)    
 
+def groupfinder(userid,request):
+    print "function groupfinder() called"
+    #user
+
 
 class RootFactory(object):
     def __init__(self, request):
-        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin')]
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin')]
 
 '''
 all the routing
@@ -132,7 +136,11 @@ def main(global_config, **settings):
     config.add_route('logout', '/logout')
     config.add_route('apicreateuser', '/apicreateuser')##not sure we want this.
     config.add_route('changemypassword','/changemypassword')
+#for requesting a password reset
     config.add_route('passwordreset','/passwordreset')
+#for compleating the password reset
+    config.add_route('reset','/reset')
+    
 #app routes (stats, etc)
     config.add_route('app_stats', 'apps/{app}/statistics/{stat}.{ext}', custom_predicates=(applist,))
     
@@ -219,7 +227,6 @@ def main(global_config, **settings):
 
 #to the dataset
     #VW specific.
-    config.add_route('check_auth', '/apps/{app}/auth', request_method='GET')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')

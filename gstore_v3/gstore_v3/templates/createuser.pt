@@ -368,8 +368,6 @@
           </select><br/>
           <label for="userid">userid:</label><br/>
           <input type="text" name="userid" value="${userid}"/><br/>
-          <label for="passsword">password:</label><br/>
-          <input type="password" name="password" value="${password}"/><br/>
           <input type="submit" name="form.submitted" value="Create User"/>
         </form>
       </div>
