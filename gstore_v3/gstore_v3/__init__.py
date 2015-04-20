@@ -3,9 +3,11 @@ from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 from pyramid.response import Response
 from pyramid.view import notfound_view_config
-from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented
+from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented, HTTPUnauthorized
+
 
 #for auth
+from pyramid.view import forbidden_view_config
 from pyramid.view import view_config
 from pyramid.security import Allow, Authenticated, remember, forget
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -88,10 +90,14 @@ def cleanup_callback(request):
 def add_cleanup_callback(event):
     event.request.add_finished_callback(cleanup_callback)    
 
+def groupfinder(userid,request):
+    print "function groupfinder() called"
+    #user
+
 
 class RootFactory(object):
     def __init__(self, request):
-        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'createuser')]
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin')]
 
 '''
 all the routing
@@ -99,7 +105,7 @@ all the routing
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    authn_policy = AuthTktAuthenticationPolicy('EDACsecret')
+    authn_policy = AuthTktAuthenticationPolicy('EDACsecret', hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
     authz_policy = ACLAuthorizationPolicy()
     config = Configurator(root_factory=RootFactory,authentication_policy=authn_policy,authorization_policy=authz_policy,settings=settings)    
     config.include('pyramid_chameleon')
@@ -114,8 +120,11 @@ def main(global_config, **settings):
     #pointer to the static xslts
     config.add_static_view(name='xslts', path='gstore_v3:../resources/xslts')
 
+    config.add_static_view(name='static', path='gstore_v3:./static')
     #pointer to the static documentation
     config.add_static_view(name='docs', path='gstore_v3:../resources/docs')
+
+    config.add_static_view(name='developer', path='gstore_v3:../resources/devdocs', permission='test')
 
     config.add_route('home', '/')    
 
@@ -123,8 +132,15 @@ def main(global_config, **settings):
     config.add_route('private', '/private')
     config.add_route('createuser', '/createuser')
     config.add_route('login', '/login')
+    config.add_route('apilogin', '/apilogin')
     config.add_route('logout', '/logout')
-
+    config.add_route('apicreateuser', '/apicreateuser')##not sure we want this.
+    config.add_route('changemypassword','/changemypassword')
+#for requesting a password reset
+    config.add_route('passwordreset','/passwordreset')
+#for compleating the password reset
+    config.add_route('reset','/reset')
+    
 #app routes (stats, etc)
     config.add_route('app_stats', 'apps/{app}/statistics/{stat}.{ext}', custom_predicates=(applist,))
     
@@ -214,7 +230,6 @@ def main(global_config, **settings):
 
 #to the dataset
     #VW specific.
-    config.add_route('check_auth', '/apps/{app}/auth', request_method='GET')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')

@@ -15,6 +15,10 @@ from ..models import DBSession
 from ..models.model_runs import (
     Modelruns,
     )
+from ..models.users import (
+    Users,
+    )
+
 from ..models.datasets import Dataset, Category
 from ..models.sources import Source, SourceFile
 from ..models.metadata import OriginalMetadata, DatasetMetadata
@@ -31,7 +35,7 @@ from ..lib.database import get_dataset
 
 #dbURL="129.24.196.22:9200/gstore/dataset"
 
-@view_config(route_name='check_model_id', request_method='POST')
+@view_config(route_name='check_model_id', request_method='POST', permission='add_model_run')
 def check_model_id(request):
 #HB
     modelid = request.params['modelid'].decode('utf-8')
@@ -49,11 +53,14 @@ def check_model_id(request):
 @view_config(route_name='add_model_id', request_method='POST', permission='add_model_run')
 def add_model_id(request):
     userid = authenticated_userid(request)
+    rn = DBSession.query(Users.firstname, Users.lastname).filter(Users.userid==userid).first()
+    firstname = rn.firstname
+    lastname = rn.lastname
     provided_uuid = generate_uuid4()
     dataset_uuid = str(provided_uuid)
     app = request.matchdict['app']
     description=request.json['description']
-    researcher_name=request.json['researcher_name']
+    researcher_name= firstname + " " + lastname
     model_run_name=request.json['model_run_name']
     model_keywords=request.json['model_keywords']
     print userid
@@ -132,7 +139,7 @@ def delete_model_id(request):
 				  DBSession.commit()
 		  
 				  #DELETE from gstoredata.metadata where dataset_id = 8765;
-				  u=DBSession.query(DatasetMetadata.dataset_id).filter(DatasetMetadata.dataset_id==datasetID).delete()
+			          u=DBSession.query(DatasetMetadata.dataset_id).filter(DatasetMetadata.dataset_id==datasetID).delete()
 				  DBSession.commit()
 	  
 				  #DELETE from gstoredata.original_metadata where dataset_id = 8765;
