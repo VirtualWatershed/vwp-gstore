@@ -69,8 +69,8 @@ def passwordreset(request):
             salt=checkemail.salt
             resetcode = hashlib.sha512(randomcode + salt).hexdigest()
             #for use in e-mail
-            base_url = request.registry.settings['BALANCER_URL']
-            resetpath = "reset?resetcode="
+            base_url = request.registry.settings['BALANCER_URL_SECURE']
+            resetpath = "/reset?resetcode="
             reseturl = base_url + resetpath + resetcode
             checkuserid = DBSession.query(Password_Reset_Codes.userid).filter(Password_Reset_Codes.userid==userid).first()                    
             #for multiple attempts at reset password requests.
@@ -335,8 +335,8 @@ def createuser(request):
                     DBSession.refresh(newuser)
                     randomcode = uuid.uuid4().hex
                     resetcode = hashlib.sha512(randomcode + salt).hexdigest()
-                    base_url = request.registry.settings['BALANCER_URL']
-                    resetpath = "reset?resetcode="
+                    base_url = request.registry.settings['BALANCER_URL_SECURE']
+                    resetpath = "/reset?resetcode="
                     reseturl = base_url + resetpath + resetcode
                     newcode = Password_Reset_Codes(userid=userid, resetcode=resetcode)
                     DBSession.add(newcode)
@@ -346,21 +346,48 @@ def createuser(request):
                     me = "wcwave@edac.unm.edu"
                     you = email
                     msg = MIMEMultipart('alternative')
-                    msg['Subject'] = "VWP Account"
+                    msg['Subject'] = "Your VWP Account"
                     msg['From'] = me
                     msg['To'] = you
-                    text = "Reset by using the link below:\n%s" % reseturl
-                    html = """\
-                    <html>
-                     <head></head>
-                      <body>
-                       <p>New account blah blah<br>
-                          You can reset your password by clicking the link below:<br>
-                          %s
-                       </p>
-                      </body>
-                    </html>
-                    """ % reseturl
+                    text = "Set your password by using the link below:\n%s" % reseturl
+                    html = """<!DOCTYPE html>
+                              <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+                                <head>
+                                  <meta charset="UTF-8" />
+                                  <title>New VWP Account</title>
+                                </head>
+                                <body>
+                                  <div id="wrap">
+                                    <div id="top-small">
+                                      <div class="top-small align-center">
+                                        <div style="text-align: center;" id="bg"> <img height="98" width="443"
+                                            src="http://vwp-dev.unm.edu/static/WC-WAVE_final2_0.png" alt="VWP" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div id="middle" style="background:#E6E6E6">
+                                      <div class="middle align-right">
+                                        <div class="app-welcome align-left" id="left"> <b>New Account</b><br />
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div id="bottom">
+                                      <div class="bottom"> <br />
+                                        A new account has been created for you on vwp-dev.unm.edu<br />
+                                        You can set your password by clicking the link below<span style="font-weight: bold;">:<br />
+                                          <br />
+                                          <h4>%s</h4>
+                                        </span> <br />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div id="footer">
+                                    <div class="footer"><br />
+                                    </div>
+                                  </div>
+                                </body>
+                              </html>
+                          """ % reseturl
 
                     # Record the MIME types of both parts - text/plain and text/html.
                     part1 = MIMEText(text, 'plain')
