@@ -4,7 +4,6 @@
     <title>Virual Watershed API</title>
     <link href="/docs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="/docs/docs.css" rel="stylesheet" media="screen">
-
     <style>
         /** via http://getbootstrap.com/examples/cover/#**/
         body {
@@ -20,6 +19,10 @@
         .wrap-inner {
             display:table-cell;
             vertical-align:top;
+        }
+        .status { 
+            padding: 30px;
+            float:right 
         }
 
         .cover-container {
@@ -78,6 +81,16 @@
     </style>
 </head>
 <body>
+        <div id="right" class="status">
+          <span tal:condition="logged_in">
+              <a href="${request.application_url}/logout">Logout</a>
+          </span>
+        </div>
+        <div id="right" class="status">
+          <span tal:condition="not:logged_in">
+              <a href="${request.application_url}/login">Login</a>
+          </span>
+        </div>
     <div id="wrap">
         <div class="wrap-inner">
             <div class="cover-container">
