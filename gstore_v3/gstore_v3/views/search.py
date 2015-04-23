@@ -2,7 +2,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest
-
+from pyramid.security import authenticated_userid, unauthenticated_userid
 import sqlalchemy
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import and_, or_, cast
@@ -373,6 +373,23 @@ def search_categories(request):
     response.content_type="application/json"    
     return response
 
+def get_available_uuids(request):
+    userid = authenticated_userid(request)
+    print userid
+    if userid is None:
+        isavailable = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
+        isavailable_query = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True)
+    else:
+        isavailable = DBSession.query(Modelruns.model_run_id).filter(or_(Modelruns.public==True,Modelruns.userid==userid)).all() 
+        isavailable_query = DBSession.query(Modelruns.model_run_id).filter(or_(Modelruns.public==True,Modelruns.userid==userid))
+    print isavailable_query
+    available = []
+    for row in isavailable:
+        available.append( row[0] )
+
+    return available
+    
+
 
 #search for any of the doctypes in es 
 @view_config(route_name='searches')
@@ -412,6 +429,14 @@ def search_doctypes(request):
     
     Raises:
     """
+    #userid = authenticated_userid(request)
+    #print userid
+    #isavailable = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
+    #cleanavailable = []
+    #for row in isavailable:
+    #    cleanavailable.append( row[0] )
+    #print cleanpublic
+    cleanavailable = get_available_uuids(request)
     ext = request.matchdict['ext']
     app = request.matchdict['app']
 
@@ -460,7 +485,7 @@ def search_doctypes(request):
     print "Password: %s" % request.registry.settings['es_user'].split(':')[-1]
 
     try:
-        searcher.parse_basic_query(app, params)
+        searcher.parse_basic_query(app, params, available_uuids=cleanavailable)
     except Exception as ex:
         return HTTPBadRequest(json.dumps({"query": searcher.query_data, "msg": ex.message}))
 
