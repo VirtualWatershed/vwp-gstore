@@ -97,7 +97,7 @@ def groupfinder(userid,request):
 
 class RootFactory(object):
     def __init__(self, request):
-        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin')]
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin'),(Allow, Authenticated, 'threddscheck')]
 
 '''
 all the routing
@@ -227,6 +227,8 @@ def main(global_config, **settings):
 
 #to the dataset
     #VW specific.
+    config.add_route('threddscheck','/threddscheck', request_method='GET')
+    config.add_route('edit_model_run', '/apps/{app}/editmodelrun', request_method='PUT')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')

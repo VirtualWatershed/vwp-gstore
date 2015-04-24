@@ -29,17 +29,66 @@ from ..lib.utils import *
 from ..lib.spatial import *
 from ..lib.database import get_dataset
 
-'''
-{"description": "Your text here"}
-'''
+def threddspermissioncheck():
+    print "thredds test"
+    query = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
+    #print query
+    uuids = []
+    for item in query:
+        uuids.append(item[0])
+    #print uuids
+    for uuid in uuids:
+        uuidstring = uuid.decode('utf-8')
+        firsttwo = uuidstring[:2]
+        path = '/geodata/thredds/%s' % firsttwo
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        linkname =  path + '/' + uuidstring
+        sourcepath = '/geodata/watershed-data/' + firsttwo + '/' + uuidstring
+        if not os.path.islink(linkname):
+            os.symlink(sourcepath, linkname)
+    
+    query = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==False).all()
+    uuids = []
+    for item in query:
+        uuids.append(item[0])
+    #print uuids
+    for uuid in uuids:
+        uuidstring = uuid.decode('utf-8')
+        firsttwo = uuidstring[:2]
+        path = '/geodata/thredds/%s' % firsttwo
+        #if not os.path.isdir(path):
+        #    os.mkdir(path)
+        if os.path.isdir(path):
+            linkname =  path + '/' + uuidstring
+            if os.path.islink(linkname):
+                print 'unlinking %s' % linkname
+                os.unlink(linkname)
+            if os.listdir(path) == []:
+                print 'removing %s' % path
+                os.rmdir(path)
 
-#dbURL="129.24.196.22:9200/gstore/dataset"
+        
+@view_config(route_name='threddscheck', request_method='GET', permission='threddscheck')
+def threddscheck(request):
+    threddspermissioncheck()
+    return Response('200')
+@view_config(route_name='edit_model_run', request_method='PUT', permission='add_model_run')
+def edit_model_run(request):
+    model_run_uuid = request.params['model_run_uuid'].decode('utf-8')
+    print model_run_uuid
+    public =  request.params['public'] if 'public' in request.params else None
+    if public is not None:
+        print public
+        print model_run_uuid
+        update = DBSession.query(Modelruns.public).filter(Modelruns.model_run_id==model_run_uuid).update({'public':public}) 
+ #    updat = DBSession.query(Users.password).filter(Users.userid==userid).update({'password': new_hashed_password})
+        threddspermissioncheck()
+    return Response('200')    
 
 @view_config(route_name='check_model_id', request_method='POST', permission='add_model_run')
 def check_model_id(request):
-#HB
     modelid = request.params['modelid'].decode('utf-8')
-    #print modelid
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]
     parent_dir = os.path.join(geodatapath, first_two_of_uuid)
@@ -63,9 +112,9 @@ def add_model_id(request):
     researcher_name= firstname + " " + lastname
     model_run_name=request.json['model_run_name']
     model_keywords=request.json['model_keywords']
+    public = request.json.get('public') if 'public' in request.json else True
     print userid
-    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords, userid=userid)
-#    modelrun = Modelruns(model_run_id=provided_uuid, description=description)
+    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords, userid=userid, public=public)
     try:
         DBSession.add(modelrun)
         DBSession.commit()
