@@ -123,6 +123,8 @@ class EsSearcher():
         #print self.query_data
         #print self.es_url 
         #print self.query_data
+        testdata=json.dumps(self.query_data)
+        print "test data %s" % testdata
         print "Now we Post the request using json.dumps of self.query_data"
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
 	print "results.text"
@@ -136,7 +138,7 @@ class EsSearcher():
     	print self.results        
         return self.results
 
-    def parse_basic_query(self, app, query_params, exclude_fields=[]):
+    def parse_basic_query(self, app, query_params, exclude_fields=[], available_uuids=[]):
 
         """build the search filter dict 
 
@@ -158,7 +160,6 @@ class EsSearcher():
 	print "\nparse_basic_query() function called from es_searcher.py"
         print "limit: %s" % limit
         print "offset: %s" % offset
-
 
         #category
         theme, subtheme, groupname = self.extract_category(query_params)
@@ -331,6 +332,14 @@ class EsSearcher():
         if exclude_fields:
             #lazy man's handling of give me all collections (no collections in mapping) or any dataset not in a collection (in collection, has collections list in mapping)
             ands += [{"missing": {"field": e}} for e in exclude_fields]
+
+        if len(available_uuids) > 0:
+            shoulds = []
+            for item in available_uuids:
+                shoulds.append({ "match" : { "model_run_uuid" : item } })
+            ands.append({"query" : {"bool" : {"should" : shoulds} } })
+            print ands
+
 
         if ands:
             filtered.update({"filter": {"and": ands}})
@@ -793,6 +802,7 @@ class RepositorySearcher(EsSearcher):
 
 
         query_request.update({"query": {"filtered": {"filter": {"and": ands}}}})
+        print query_request
 
         self.query_data = query_request
 

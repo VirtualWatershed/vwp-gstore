@@ -457,8 +457,11 @@ def indexer(request):
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
     filename = request.POST['file'].filename
+    print filename
     input_file = request.POST['file'].file
+    print input_file
     modelid = request.params['modelid'].decode('utf-8')
+    print modelid
     #print modelid
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]

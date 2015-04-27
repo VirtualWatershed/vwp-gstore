@@ -23,14 +23,16 @@ class Modelruns(Base):
         Column('start_date', TIMESTAMP, FetchedValue()),
         Column('end_date', TIMESTAMP, FetchedValue()),
         Column('id', Integer, primary_key=True),
+        Column('public', Boolean),
         schema = 'gstoredata'
     )
 
-    def __init__(self, model_run_id, description, researcher_name,userid,model_run_name,model_keywords):
+    def __init__(self, model_run_id, description, researcher_name,userid,model_run_name,model_keywords,public):
         self.model_run_id, = model_run_id,
         self.description = description,
         self.researcher_name=researcher_name,
         self.userid=userid,
         self.model_run_name=model_run_name,
         self.model_keywords=model_keywords,
+        self.public=public,
 
