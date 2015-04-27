@@ -29,6 +29,8 @@ from ..lib.utils import *
 from ..lib.spatial import *
 from ..lib.database import get_dataset
 
+#**************************************************************************************************************************
+
 def threddspermissioncheck():
     print "thredds test"
     query = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
@@ -68,23 +70,43 @@ def threddspermissioncheck():
                 print 'removing %s' % path
                 os.rmdir(path)
 
+#**************************************************************************************************************************
         
 @view_config(route_name='threddscheck', request_method='GET', permission='threddscheck')
 def threddscheck(request):
     threddspermissioncheck()
     return Response('200')
+
+#**************************************************************************************************************************
+
 @view_config(route_name='edit_model_run', request_method='PUT', permission='add_model_run')
 def edit_model_run(request):
+    userid = authenticated_userid(request)
     model_run_uuid = request.params['model_run_uuid'].decode('utf-8')
-    print model_run_uuid
     public =  request.params['public'] if 'public' in request.params else None
-    if public is not None:
-        print public
-        print model_run_uuid
-        update = DBSession.query(Modelruns.public).filter(Modelruns.model_run_id==model_run_uuid).update({'public':public}) 
- #    updat = DBSession.query(Users.password).filter(Users.userid==userid).update({'password': new_hashed_password})
-        threddspermissioncheck()
-    return Response('200')    
+    full_model_query=DBSession.query(Modelruns.model_run_id,Modelruns.userid).filter((Modelruns.model_run_id==model_run_uuid) & (Modelruns.userid==userid)).first()
+    userid_query=DBSession.query(Modelruns.userid).filter(Modelruns.userid==userid).first()
+    uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==model_run_uuid).first()
+
+    if(full_model_query==None):
+        if(userid_query==None):
+            return HTTPUnprocessableEntity("The userid is not associated with any model runs")
+        else:
+            if(uuid_query==None):
+                return HTTPUnprocessableEntity("The model run uuid is not located in the list of model runs")
+            else:
+                return HTTPUnprocessableEntity("The model run exists, but you are not the owner and cannot modify this model run")
+    else:
+        if public is not None:
+            print public
+            print model_run_uuid
+            update = DBSession.query(Modelruns.public).filter(Modelruns.model_run_id==model_run_uuid).update({'public':public}) 
+            threddspermissioncheck()
+        return Response('200')    
+
+
+
+#**************************************************************************************************************************
 
 @view_config(route_name='check_model_id', request_method='POST', permission='add_model_run')
 def check_model_id(request):
@@ -98,6 +120,7 @@ def check_model_id(request):
         return Response('False')
     return Response('True')    
 
+#**************************************************************************************************************************
 
 @view_config(route_name='add_model_id', request_method='POST', permission='add_model_run')
 def add_model_id(request):
@@ -133,6 +156,8 @@ def add_model_id(request):
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
     return Response(dataset_uuid)
+
+#**************************************************************************************************************************
 
 @view_config(route_name='delete_model_id', request_method='DELETE', permission='delete')
 def delete_model_id(request):
