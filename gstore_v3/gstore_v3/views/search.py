@@ -27,6 +27,11 @@ from ..models.model_runs import (
 from ..models.features import Feature
 
 from ..models.vocabs import geolookups
+
+from ..models.users import (
+    Users
+    )
+
 from ..lib.spatial import *
 from ..lib.mongo import *
 from ..lib.utils import *
@@ -666,6 +671,65 @@ def search(request):
     response.content_type="application/json"    
     #return response
 
+def get_valid_inventory_params():
+    params = []
+    # v add more params here v 
+    params.append('researchers')
+    # ^ add more params here ^
+    return params
+
+def handle_param(param):
+    if param == 'researchers':
+        query = DBSession.query(Users.userid, Users.firstname, Users.lastname)
+        # v add filters here v
+        # ^ add filters here ^
+        queryall = query.order_by(Users.lastname.asc()).all()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'userid':item[0]})
+            listitem.update({'name':item[1] + " " + item[2]})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'researchers':sublist})
+        print list
+        return list
+ 
+    return [param]
+
+@view_config(route_name='inventory')
+def inventory_search(request):
+    '''
+    return file of requested type with inventory of requested items or list of available parameters if no parameters are given
+    '''
+#fart
+    app = request.matchdict['app']
+    ext = request.matchdict['ext']
+
+    params = normalize_params(request.params)
+
+    invparams = get_valid_inventory_params()
+    print invparams
+    print params
+    resp = []
+    if params:
+        for param in params:
+           print param
+           if param in invparams:
+               resp.append(handle_param(param))
+           else:
+               resp.append({'invalid parameter':param})
+        response = Response(json.dumps(resp))
+        response.content_type = 'application/json'
+    else:
+        response = Response(json.dumps({'valid params':invparams}))
+        response.content_type = 'application/json'
+    
+    return response
 
 #TODO: finish this
 @view_config(route_name='search_features', renderer='json')
