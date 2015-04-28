@@ -106,14 +106,20 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
 @view_config(route_name='search_modelruns', renderer='json')
 def search_modelruns(request):
 
-#	params = normalize_params(request.params)
-	model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
+        userid = authenticated_userid(request)
+        model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
         research_name = request.params.get('researcher_name') if 'researcher_name' in request.params else ''
-	keywords = request.params.get('model_keywords') if 'model_keywords' in request.params else ''
-	modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
-	desc = request.params.get('description') if 'description' in request.params else ''
+        keywords = request.params.get('model_keywords') if 'model_keywords' in request.params else ''
+        modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
+        desc = request.params.get('description') if 'description' in request.params else ''
 
-	filter_cond=[]
+        filter_cond=[]
+
+        if userid is None:
+            filter_cond.append(Modelruns.public==True)
+        else:
+            filter_cond.append(or_(Modelruns.public==True,Modelruns.userid==userid))
+
 
         if model_uuid:
                 print "Model Run UUID: %s" % model_uuid
@@ -122,16 +128,12 @@ def search_modelruns(request):
 	if research_name:
 		print "Research Name: %s" % research_name
                 filter_cond.append(Modelruns.researcher_name.contains(research_name))
-#		filter_cond.append("Modelruns.researcher_name=='%s'" % research_name)
 	if keywords:
 		print "Keywords: %s" % keywords
 		filter_cond.append(Modelruns.model_keywords.contains(keywords))
 	if modelName:
 		print "Model Name: %s" % modelName
 		filter_cond.append(Modelruns.model_run_name.contains(modelName))
-#	if model_uuid:
-#		print "Model Run UUID: %s" % model_uuid
-#		filter_cond.append(Modelruns.model_run_id==model_uuid)
 	if desc:
 		print "Description: %s" % desc
 		filter_cond.append(Modelruns.description.contains(desc))
@@ -141,16 +143,10 @@ def search_modelruns(request):
 	print "******************************\n\n"
 
 	
-	#model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(Modelruns.researcher_name=="William Hudspeth")
-	#model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
 
 	if (filter_cond and len(filter_cond)>=1):
 	    	print "Filter conditions found with 1 parameter..."
 		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
-#	elif (filter_cond and len(filter_cond)>1):
-#		print "Filter conditions found with more than 1 parameter..."	
-#	        #filterString = "and_(%s)" % filterString
-#                model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
 	else:
 		print "Filter conditions not found...printing all records"
 		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
@@ -224,6 +220,7 @@ def search_categories(request):
     es_password = request.registry.settings['es_user'].split(':')[-1]
 
     es_url = es_connection + es_index + '/' + es_type +'/_search'
+    print es_url
 
     #set up the basic query with embargo/active flags at the dataset level BUT not the app here 
     #because the categories could be different for the apps (i.e. 'climate' for epscor and 'nrcs' for rgis (don't do that, though))
@@ -296,6 +293,7 @@ def search_categories(request):
 
             level = 2
         else:
+            print "no facet level"
             return return_no_results()
     else:
         #get themes with datasets in the app
@@ -352,9 +350,12 @@ def search_categories(request):
         return query
 
     results = requests.post(es_url, data=json.dumps(query), auth=(es_user, es_password))
-    
+    print json.dumps(query)
+    print results.text    
     data = results.json()
+    print data
     if 'facets' not in data:
+        print "no facets in data"
         return return_no_results()
 
     #TODO: get rid of the cls element (not used, kinda stupid)
