@@ -16,7 +16,7 @@ import requests
 from ..models import DBSession
 from ..models.datasets import (
     Dataset,
-    Category
+    Category,
     )
 
 from ..models.model_runs import (
@@ -26,6 +26,8 @@ from ..models.model_runs import (
 from ..models.features import Feature
 
 from ..models.vocabs import geolookups
+from ..models.users import Users
+from ..models.groups import Groups
 from ..lib.spatial import *
 from ..lib.mongo import *
 from ..lib.utils import *
@@ -101,6 +103,12 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
 
     return response
 
+@view_config(route_name='haysgroups')
+def haysgroup_search(request):
+    groups = DBSession.query(Groups.groupname).join(Users.groups).filter(and_(Users.userid=='hays.barrett')).all()
+    response = Response(json.dumps(groups))
+    response.content_type = 'application/json'
+    return response
 
 @view_config(route_name='search_modelruns', renderer='json')
 def search_modelruns(request):

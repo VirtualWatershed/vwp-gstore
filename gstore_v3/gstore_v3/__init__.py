@@ -19,6 +19,7 @@ from .models import DBSession
 from pyramid.events import subscriber
 from pyramid.events import NewRequest
 
+from views.security import groupfinder
 
 #TODO: put in some reasonable error messages. 
 #custom error methods   
@@ -90,14 +91,14 @@ def cleanup_callback(request):
 def add_cleanup_callback(event):
     event.request.add_finished_callback(cleanup_callback)    
 
-def groupfinder(userid,request):
-    print "function groupfinder() called"
-    #user
+#def groupfinder(userid,request):
+#    print "function groupfinder() called"
+#    #user
 
 
 class RootFactory(object):
     def __init__(self, request):
-        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin'),(Allow, Authenticated, 'threddscheck')]
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin'),(Allow, 'group:developers', 'developers'),(Allow, Authenticated, 'threddscheck')]
 
 '''
 all the routing
@@ -105,7 +106,7 @@ all the routing
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    authn_policy = AuthTktAuthenticationPolicy('EDACsecret', hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
+    authn_policy = AuthTktAuthenticationPolicy('EDACsecret', callback=groupfinder, hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
     authz_policy = ACLAuthorizationPolicy()
     config = Configurator(root_factory=RootFactory,authentication_policy=authn_policy,authorization_policy=authz_policy,settings=settings)    
     config.include('pyramid_chameleon')
@@ -124,7 +125,7 @@ def main(global_config, **settings):
     #pointer to the static documentation
     config.add_static_view(name='docs', path='gstore_v3:../resources/docs')
 
-    config.add_static_view(name='developer', path='gstore_v3:../resources/devdocs', permission='test')
+    config.add_static_view(name='developer', path='gstore_v3:../resources/devdocs', permission='developers')
 
     config.add_route('home', '/')    
 
@@ -274,6 +275,8 @@ def main(global_config, **settings):
     config.add_route('vocab', '/apps/{app}/vocabs/{type}/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}.{ext}', custom_predicates=(applist,))
     config.add_route('add_vocab', '/apps/{app}/vocabs/{type}', custom_predicates=(applist,), request_method='PUT')
     
+    config.add_route('haysgroups', '/apps/{app}/haysgroups', custom_predicates=(applist,))
+
     config.scan('gstore_v3')
     return config.make_wsgi_app()
 

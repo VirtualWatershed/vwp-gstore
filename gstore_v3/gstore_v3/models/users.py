@@ -11,6 +11,8 @@ from sqlalchemy.orm import (
 from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.dialects.postgresql import UUID
 
+from groups import Groups
+
 class Users(Base):
 
     __table__ = Table('users', Base.metadata,
@@ -47,5 +49,8 @@ class Users(Base):
 	self.tel_voice=tel_voice,
 	self.tel_fax=tel_fax,
 	self.country=country,
-		
+
+    groups = relationship('Groups',
+                    secondary='gstoredata.users_groups',
+                    backref='users')
 
