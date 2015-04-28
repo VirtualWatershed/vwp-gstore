@@ -22,7 +22,6 @@ from ..lib.mongo import gMongoUri
 from ..lib.es_indexer import DatasetIndexer
 from ..lib.spatial_streamer import *
 
-#this is a test
 
 #TODO: add dataset statistics view - min/max per attribute, histogram info, etc
 
@@ -673,8 +672,8 @@ def add_dataset(request):
     #add the category set (if not in categories) and assign to dataset
     for category in categories:
         theme = category['modelname']
-        subtheme = category['location']
-        groupname = category['state']
+        subtheme = category['state']
+        groupname = category['location']
 
         c = DBSession.query(Category).filter(and_(Category.theme==theme, Category.subtheme==subtheme, Category.groupname==groupname)).first()
         if not c:
