@@ -5,7 +5,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest
 from pyramid.security import authenticated_userid, unauthenticated_userid
 import sqlalchemy
 from sqlalchemy import desc, asc, func
-from sqlalchemy.sql.expression import and_, or_, cast
+from sqlalchemy.sql.expression import and_, or_, cast, not_
 from sqlalchemy.sql import between
 from sqlalchemy.sql import text
 
@@ -675,6 +675,10 @@ def get_valid_inventory_params():
     params = []
     # v add more params here v 
     params.append('researchers')
+    params.append('modelname')
+    params.append('statename')
+    params.append('watershedname')
+    params.append('keywords')
     # ^ add more params here ^
     return params
 
@@ -698,7 +702,85 @@ def handle_param(param):
         list.update({'researchers':sublist})
         print list
         return list
- 
+    elif param == 'modelname':
+        query = DBSession.query(Category.theme)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.theme.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'model':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'modelname':sublist})
+        return list
+    elif param == 'statename':
+        query = DBSession.query(Category.subtheme)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.subtheme.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'state':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'statename':sublist})
+        return list
+    elif param == 'watershedname':
+        query = DBSession.query(Category.groupname)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.groupname.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'watershed':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'watershedname':sublist})
+        return list
+    elif param == 'keywords':
+        query = DBSession.query(Modelruns.model_keywords)
+        # v add filters here v
+        # ^ add filters here ^
+        queryall = query.distinct()
+        keywords = []
+        for item in queryall:
+            words = item[0].split(',')
+            for word in words:
+                word = word.strip()
+                if word not in keywords:
+                    keywords.append(word)
+        list = {}
+        sublist = []
+        num = 0
+        for item in keywords:
+            num = num + 1
+            listitem = {}
+            listitem.update({'keyword':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'keywords':sublist})
+        return list
+
     return [param]
 
 @view_config(route_name='inventory')
