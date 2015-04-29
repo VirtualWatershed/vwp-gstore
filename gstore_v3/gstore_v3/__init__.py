@@ -98,7 +98,7 @@ def add_cleanup_callback(event):
 
 class RootFactory(object):
     def __init__(self, request):
-        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin'),(Allow, 'group:developers', 'developers'),(Allow, Authenticated, 'threddscheck')]
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin'),(Allow, 'group:developers', 'developers'),(Allow, Authenticated, 'threddscheck'),(Allow,'group:admins', 'admin')]
 
 '''
 all the routing
@@ -275,7 +275,10 @@ def main(global_config, **settings):
     config.add_route('vocab', '/apps/{app}/vocabs/{type}/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}.{ext}', custom_predicates=(applist,))
     config.add_route('add_vocab', '/apps/{app}/vocabs/{type}', custom_predicates=(applist,), request_method='PUT')
     
-    config.add_route('haysgroups', '/apps/{app}/haysgroups', custom_predicates=(applist,))
+#    config.add_route('haysgroups', '/apps/{app}/haysgroups', custom_predicates=(applist,))
+
+    config.add_route('group_manager', '/admin/managegroups')
+    config.add_route('group_manager_frontend', '/admin/groupmanager')
 
     config.scan('gstore_v3')
     return config.make_wsgi_app()
