@@ -1,7 +1,7 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest
+from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest, HTTPForbidden
 from pyramid.security import authenticated_userid, unauthenticated_userid
 import sqlalchemy
 from sqlalchemy import desc, asc, func
@@ -38,6 +38,10 @@ from ..lib.utils import *
 from ..lib.database import get_dataset, get_collection
 from ..lib.es_searcher import *
 
+def valid_uuid(uuid):
+    regex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z', re.I)
+    match = regex.match(uuid)
+    return bool(match)
 
 
 def return_no_results(ext='json'):
@@ -111,37 +115,56 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
 @view_config(route_name='search_modelruns', renderer='json')
 def search_modelruns(request):
 
+        params = normalize_params(request.params)
         userid = authenticated_userid(request)
-        model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
+        param_model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
+        if  param_model_uuid:
+            validuuid=valid_uuid(param_model_uuid)
+            if validuuid is True:
+                model_uuid = param_model_uuid
+            else:
+                model_uuid = ''
+                return HTTPBadRequest('modelrun UUID provided is not a valid UUID')
+        else:
+            model_uuid = ''
         research_name = request.params.get('researcher_name') if 'researcher_name' in request.params else ''
         keywords = request.params.get('model_keywords') if 'model_keywords' in request.params else ''
         modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
         desc = request.params.get('description') if 'description' in request.params else ''
+        uid = request.params.get('userid') if 'userid' in request.params else ''
 
         filter_cond=[]
 
         if userid is None:
             filter_cond.append(Modelruns.public==True)
+            if 'mymodels' in params:
+                return HTTPForbidden("mymodels is only available to logged in users.")
         else:
-            filter_cond.append(or_(Modelruns.public==True,Modelruns.userid==userid))
+            if 'mymodels' in params:
+                filter_cond.append(Modelruns.userid==userid)
+            else:
+                filter_cond.append(or_(Modelruns.public==True,Modelruns.userid==userid))
 
+        if uid:
+                print "Model Run UID: %s" % uid
+                filter_cond.append(Modelruns.userid==uid)
 
         if model_uuid:
                 print "Model Run UUID: %s" % model_uuid
                 filter_cond.append(Modelruns.model_run_id==model_uuid)
 
-	if research_name:
-		print "Research Name: %s" % research_name
+        if research_name:
+                print "Research Name: %s" % research_name
                 filter_cond.append(Modelruns.researcher_name.contains(research_name))
-	if keywords:
-		print "Keywords: %s" % keywords
-		filter_cond.append(Modelruns.model_keywords.contains(keywords))
-	if modelName:
-		print "Model Name: %s" % modelName
-		filter_cond.append(Modelruns.model_run_name.contains(modelName))
-	if desc:
-		print "Description: %s" % desc
-		filter_cond.append(Modelruns.description.contains(desc))
+        if keywords:
+                print "Keywords: %s" % keywords
+                filter_cond.append(Modelruns.model_keywords.contains(keywords))
+        if modelName:
+                print "Model Name: %s" % modelName
+                filter_cond.append(Modelruns.model_run_name.contains(modelName))
+        if desc:
+                print "Description: %s" % desc
+                filter_cond.append(Modelruns.description.contains(desc))
 
 	print "\n\n********************"
 	print "FILTER CONDITIONS: %s" % filter_cond
