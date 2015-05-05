@@ -31,10 +31,11 @@ class Users(Base):
 	Column('city', String(100)),
         Column('country', String(100)),
         Column('id', Integer, primary_key=True),
+        Column('institution', String(10)),
         schema = 'gstoredata'
     )
 
-    def __init__(self, userid, firstname, lastname, email, address1,address2, city, state, zipcode, tel_voice, tel_fax, country,salt, password):
+    def __init__(self, userid, firstname, lastname, email, address1,address2, city, state, zipcode, tel_voice, tel_fax, country,salt, password, institution):
         self.userid = userid,
         self.firstname = firstname,
         self.lastname=lastname,
@@ -49,6 +50,7 @@ class Users(Base):
 	self.tel_voice=tel_voice,
 	self.tel_fax=tel_fax,
 	self.country=country,
+        self.institution=institution
 
     groups = relationship('Groups',
                     secondary='gstoredata.users_groups',
