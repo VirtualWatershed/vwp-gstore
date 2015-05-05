@@ -6,7 +6,7 @@ from pyramid.view import notfound_view_config
 from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented, HTTPUnauthorized
 
 
-#for auth
+#for auth#
 from pyramid.view import forbidden_view_config
 from pyramid.view import view_config
 from pyramid.security import Allow, Authenticated, remember, forget
