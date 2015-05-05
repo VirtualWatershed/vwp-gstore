@@ -277,6 +277,9 @@ def main(global_config, **settings):
     config.add_route('vocab', '/apps/{app}/vocabs/{type}/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}.{ext}', custom_predicates=(applist,))
     config.add_route('add_vocab', '/apps/{app}/vocabs/{type}', custom_predicates=(applist,), request_method='PUT')
     
+#to inventories
+    config.add_route('inventory', '/apps/{app}/inventory.{ext}', custom_predicates=(applist,)) 
+
     config.scan('gstore_v3')
     return config.make_wsgi_app()
 

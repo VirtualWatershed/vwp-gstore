@@ -814,6 +814,152 @@
                         </div>
                     </div>
                 </li>
+                <li id="search-inventory">
+                    <div class="http-definition">
+                            <h3>
+                                <span class="http-method">GET</span>
+                                <span class="http-path">/apps/{app}/inventory.json</span>
+                                <span class="http-name">Search Inventory</span>
+                            </h3>
+                        </div>
+                        <div class="http-options">
+                            <p>Search for an inventory of requested items. Returns a list of items for each parameter passed, including a number of 
+                               total options.
+                            </p>
+                            <p>Future work will include a total amount for each individual option.
+                            
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h5>Query Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                        <th>Required</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>researchers</td>
+                                        <td>Returns list of researchers (selected from existing user ids)</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>modelname</td>
+                                        <td>Returns list of model names in the database</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>statename</td>
+                                        <td>Returns list of state names in the database</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>watershedname</td>
+                                        <td>Returns list of model names in the database</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>keywords</td>
+                                        <td>Returns list of keywords in the database</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+
+                            <h5>Examples</h5>
+                            <p>Return lists of model names, state names and watershed names</p>
+                            <p class="example">/apps/<span class="route-highlight">vwp</span>/inventory.json?modelname&statename&watershedname</p>
+
+                            <h4>Response</h4>
+                            <div>
+                                <h5>Schema</h5>
+                                <div class="schema-block">
+                                    <div><span class="schema-object">results</span> (<span class="schema-datatype">array[dict]</span>):
+                                        <div class="schema-nested-object">
+                                            <div><span class="schema-object">box</span> (<span class="schema-datatype">array[double]</span>): bounding box coordinates as minx, miny, maxx, maxy</div>
+                                            <div><span class="schema-object">text</span> (<span class="schema-datatype">string</span>): object name</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <p>Response for a model name -> state name -> watershed name search:</p>
+                                <pre>
+[
+    {
+        "num": 1,
+        "param": "watershedname",
+        "watershedname": [
+            {
+                "watershed": 
+                    ["Dry Creek"]
+            }
+        ]
+    },
+    {
+        "modelname": [
+            {
+                "model": 
+                    ["isnobal"]
+            },
+            {
+                "model": 
+                    ["reference"]
+            }
+        ],
+        "num": 2,
+        "param": "modelname"
+    },
+    {
+        "num": 1,
+        "param": "statename",
+        "statename": [
+            {
+                "state":
+                    ["Idaho"]
+            }
+        ]
+    }
+]
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </li>
             </ul>
         </div>
     </div>

@@ -5,7 +5,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest
 from pyramid.security import authenticated_userid, unauthenticated_userid
 import sqlalchemy
 from sqlalchemy import desc, asc, func
-from sqlalchemy.sql.expression import and_, or_, cast
+from sqlalchemy.sql.expression import and_, or_, cast, not_
 from sqlalchemy.sql import between
 from sqlalchemy.sql import text
 import re
@@ -27,6 +27,11 @@ from ..models.model_runs import (
 from ..models.features import Feature
 
 from ..models.vocabs import geolookups
+
+from ..models.users import (
+    Users
+    )
+
 from ..lib.spatial import *
 from ..lib.mongo import *
 from ..lib.utils import *
@@ -272,7 +277,7 @@ def search_categories(request):
         if len(parts) == 1:
             #get subthemes
             facets = {
-                "categories": {"terms": {"field": "subtheme", "size": 100, "order": "term"},
+                "categories": {"terms": {"field": "category_facets.subtheme", "size": 100, "order": "term"},
                     "nested": "category_facets",
                     "facet_filter": {
                         "query": {
@@ -280,8 +285,8 @@ def search_categories(request):
                                 "query": {"match_all": {}},
                                 "filter": {
                                     "and": [
-                                        {"term": {"apps": app.lower()}},
-                                        {"term": {"theme": parts[0]}}
+                                        {"term": {"category_facets.apps": app.lower()}},
+                                        {"term": {"category_facets.theme": parts[0]}}
                                     ]
                                 }
                             }
@@ -296,7 +301,7 @@ def search_categories(request):
         elif len(parts) == 2:
             #get groupnames
             facets = {
-                "categories": {"terms": {"field": "groupname", "size": 100, "order": "term"},
+                "categories": {"terms": {"field": "category_facets.groupname", "size": 100, "order": "term"},
                     "nested": "category_facets",
                     "facet_filter": {
                         "query": {
@@ -304,9 +309,9 @@ def search_categories(request):
                                 "query": {"match_all": {}},
                                 "filter": {
                                     "and": [
-                                        {"term": {"apps": app.lower()}},
-                                        {"term": {"theme": parts[0]}},
-                                        {"term": {"subtheme": parts[1]}}
+                                        {"term": {"category_facets.apps": app.lower()}},
+                                        {"term": {"category_facets.theme": parts[0]}},
+                                        {"term": {"category_facets.subtheme": parts[1]}}
                                     ]
                                 }
                             }
@@ -340,7 +345,7 @@ def search_categories(request):
                                 },
                                 "filter": {
                                 	    "and": [
-                                    	    {"term": {"apps": "epscor"}}
+                                    	    {"term": {"category_facets.apps": "epscor"}}
                                     ]
                                 }
                             }
@@ -352,7 +357,7 @@ def search_categories(request):
         '''
         #the field of the nested set, the size (for now) is larger than the set, and order by the term alphabetically
         facets = {
-            "categories": {"terms": {"field": "theme", "size": 700, "order": "term"},
+            "categories": {"terms": {"field": "category_facets.theme", "size": 700, "order": "term"},
                 "nested": "category_facets",
                 "facet_filter": {
                     "query": {
@@ -360,7 +365,7 @@ def search_categories(request):
                             "query": {"match_all": {}},
                             "filter": {
                                 "and": [
-                                    {"term": {"apps": app.lower()}}
+                                    {"term": {"category_facets.apps": app.lower()}}
                                 ]
                             }
                         }
@@ -691,6 +696,147 @@ def search(request):
     response.content_type="application/json"    
     #return response
 
+def get_valid_inventory_params():
+    params = []
+    # v add more params here v 
+    params.append('researchers')
+    params.append('modelname')
+    params.append('statename')
+    params.append('watershedname')
+    params.append('keywords')
+    # ^ add more params here ^
+    return params
+
+def handle_param(param):
+    if param == 'researchers':
+        query = DBSession.query(Users.userid, Users.firstname, Users.lastname)
+        # v add filters here v
+        # ^ add filters here ^
+        queryall = query.order_by(Users.lastname.asc()).all()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'userid':item[0]})
+            listitem.update({'name':item[1] + " " + item[2]})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'researchers':sublist})
+        print list
+        return list
+    elif param == 'modelname':
+        query = DBSession.query(Category.theme)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.theme.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'model':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'modelname':sublist})
+        return list
+    elif param == 'statename':
+        query = DBSession.query(Category.subtheme)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.subtheme.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'state':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'statename':sublist})
+        return list
+    elif param == 'watershedname':
+        query = DBSession.query(Category.groupname)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.groupname.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'watershed':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'watershedname':sublist})
+        return list
+    elif param == 'keywords':
+        query = DBSession.query(Modelruns.model_keywords)
+        # v add filters here v
+        # ^ add filters here ^
+        queryall = query.distinct()
+        keywords = []
+        for item in queryall:
+            words = item[0].split(',')
+            for word in words:
+                word = word.strip()
+                if word not in keywords:
+                    keywords.append(word)
+        list = {}
+        sublist = []
+        num = 0
+        for item in keywords:
+            num = num + 1
+            listitem = {}
+            listitem.update({'keyword':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'keywords':sublist})
+        return list
+
+    return [param]
+
+@view_config(route_name='inventory')
+def inventory_search(request):
+    '''
+    return file of requested type with inventory of requested items or list of available parameters if no parameters are given
+    '''
+#fart
+    app = request.matchdict['app']
+    ext = request.matchdict['ext']
+
+    params = normalize_params(request.params)
+
+    invparams = get_valid_inventory_params()
+    print invparams
+    print params
+    resp = []
+    if params:
+        for param in params:
+           print param
+           if param in invparams:
+               resp.append(handle_param(param))
+           else:
+               resp.append({'invalid parameter':param})
+        response = Response(json.dumps(resp))
+        response.content_type = 'application/json'
+    else:
+        response = Response(json.dumps({'valid params':invparams}))
+        response.content_type = 'application/json'
+    
+    return response
 
 #TODO: finish this
 @view_config(route_name='search_features', renderer='json')
