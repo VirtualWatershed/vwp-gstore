@@ -17,7 +17,7 @@ import requests
 from ..models import DBSession
 from ..models.datasets import (
     Dataset,
-    Category
+    Category,
     )
 
 from ..models.model_runs import (
@@ -28,10 +28,8 @@ from ..models.features import Feature
 
 from ..models.vocabs import geolookups
 
-from ..models.users import (
-    Users
-    )
-
+from ..models.users import Users
+from ..models.groups import Groups
 from ..lib.spatial import *
 from ..lib.mongo import *
 from ..lib.utils import *
@@ -111,7 +109,6 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
         return HTTPNotFound()
 
     return response
-
 
 @view_config(route_name='search_modelruns', renderer='json')
 def search_modelruns(request):
