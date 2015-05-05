@@ -252,7 +252,7 @@ def search_categories(request):
         if len(parts) == 1:
             #get subthemes
             facets = {
-                "categories": {"terms": {"field": "subtheme", "size": 100, "order": "term"},
+                "categories": {"terms": {"field": "category_facets.subtheme", "size": 100, "order": "term"},
                     "nested": "category_facets",
                     "facet_filter": {
                         "query": {
@@ -260,8 +260,8 @@ def search_categories(request):
                                 "query": {"match_all": {}},
                                 "filter": {
                                     "and": [
-                                        {"term": {"apps": app.lower()}},
-                                        {"term": {"theme": parts[0]}}
+                                        {"term": {"category_facets.apps": app.lower()}},
+                                        {"term": {"category_facets.theme": parts[0]}}
                                     ]
                                 }
                             }
@@ -276,7 +276,7 @@ def search_categories(request):
         elif len(parts) == 2:
             #get groupnames
             facets = {
-                "categories": {"terms": {"field": "groupname", "size": 100, "order": "term"},
+                "categories": {"terms": {"field": "category_facets.groupname", "size": 100, "order": "term"},
                     "nested": "category_facets",
                     "facet_filter": {
                         "query": {
@@ -284,9 +284,9 @@ def search_categories(request):
                                 "query": {"match_all": {}},
                                 "filter": {
                                     "and": [
-                                        {"term": {"apps": app.lower()}},
-                                        {"term": {"theme": parts[0]}},
-                                        {"term": {"subtheme": parts[1]}}
+                                        {"term": {"category_facets.apps": app.lower()}},
+                                        {"term": {"category_facets.theme": parts[0]}},
+                                        {"term": {"category_facets.subtheme": parts[1]}}
                                     ]
                                 }
                             }
@@ -320,7 +320,7 @@ def search_categories(request):
                                 },
                                 "filter": {
                                 	    "and": [
-                                    	    {"term": {"apps": "epscor"}}
+                                    	    {"term": {"category_facets.apps": "epscor"}}
                                     ]
                                 }
                             }
@@ -332,7 +332,7 @@ def search_categories(request):
         '''
         #the field of the nested set, the size (for now) is larger than the set, and order by the term alphabetically
         facets = {
-            "categories": {"terms": {"field": "theme", "size": 700, "order": "term"},
+            "categories": {"terms": {"field": "category_facets.theme", "size": 700, "order": "term"},
                 "nested": "category_facets",
                 "facet_filter": {
                     "query": {
@@ -340,7 +340,7 @@ def search_categories(request):
                             "query": {"match_all": {}},
                             "filter": {
                                 "and": [
-                                    {"term": {"apps": app.lower()}}
+                                    {"term": {"category_facets.apps": app.lower()}}
                                 ]
                             }
                         }
