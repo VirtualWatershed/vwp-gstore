@@ -155,6 +155,7 @@ def add_model_id(request):
         os.mkdir(parent_dir)
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
+    threddspermissioncheck()
     return Response(dataset_uuid)
 
 #**************************************************************************************************************************
@@ -193,6 +194,33 @@ def delete_model_id(request):
 			  print "No Children found ----> Deleting all datasets...with the specificed model_run_uuid : %s" % model_uuid
 			  data_query=DBSession.query(Dataset.id,Dataset.uuid).filter(Dataset.model_run_uuid==model_uuid)
 
+                          #Move physical data to archives
+                          uuidstring = model_uuid.decode('utf-8')
+                          firsttwo = uuidstring[:2]
+                          oldpath = '/geodata/watershed-data/' + firsttwo
+                          newpath = '/geodata/archive/' + firsttwo
+                          if not os.path.isdir(newpath):
+                              os.mkdir(newpath)
+                          oldpath_uuid = oldpath + '/' + uuidstring
+                          newpath_uuid = newpath + '/' + uuidstring
+                          if not os.path.isdir(newpath_uuid):
+                              os.mkdir(newpath_uuid)
+                          oldlist = os.listdir(oldpath_uuid)
+                          for item in oldlist:
+                              print "Moving " + item + " to archive..."
+                              if not os.path.exists(newpath_uuid + '/' + item):
+                                  os.rename(oldpath_uuid + '/' + item, newpath_uuid + '/' + item)
+                          linkpath = '/geodata/thredds/' + firsttwo
+                          if os.path.isdir(linkpath):
+                              linkname = linkpath + '/' + uuidstring
+                              if os.path.islink(linkname):
+                                  os.unlink(linkname)
+                              if os.listdir(linkpath) ==[]:
+                                  os.rmdir(linkpath)
+                          if os.path.isdir(oldpath_uuid):
+                              os.rmdir(oldpath_uuid)
+                          if os.listdir(oldpath) ==[]:
+                              os.rmdir(oldpath)
 			  #Search through all of the datasets with matching model_run_uuid and grab the id and the dataset UUID
 			  #then iterate through all records and run each of the delete commands for all of the tables
 			  counter=0
