@@ -1,13 +1,14 @@
 from pyramid.view import view_config
 from pyramid.response import Response
 
-from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest
-
+from pyramid.httpexceptions import HTTPNotFound, HTTPServerError, HTTPBadRequest, HTTPForbidden
+from pyramid.security import authenticated_userid, unauthenticated_userid
 import sqlalchemy
 from sqlalchemy import desc, asc, func
-from sqlalchemy.sql.expression import and_, or_, cast
+from sqlalchemy.sql.expression import and_, or_, cast, not_
 from sqlalchemy.sql import between
-
+from sqlalchemy.sql import text
+import re
 import json
 from datetime import datetime
 
@@ -16,7 +17,7 @@ import requests
 from ..models import DBSession
 from ..models.datasets import (
     Dataset,
-    Category
+    Category,
     )
 
 from ..models.model_runs import (
@@ -26,12 +27,20 @@ from ..models.model_runs import (
 from ..models.features import Feature
 
 from ..models.vocabs import geolookups
+
+from ..models.users import Users
+from ..models.groups import Groups
 from ..lib.spatial import *
 from ..lib.mongo import *
 from ..lib.utils import *
 from ..lib.database import get_dataset, get_collection
 from ..lib.es_searcher import *
 
+
+def valid_uuid(uuid):
+    regex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z', re.I)
+    match = regex.match(uuid)
+    return bool(match)
 
 
 def return_no_results(ext='json'):
@@ -101,55 +110,70 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
 
     return response
 
-
 @view_config(route_name='search_modelruns', renderer='json')
 def search_modelruns(request):
 
-#	params = normalize_params(request.params)
-	model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
+        params = normalize_params(request.params)
+        userid = authenticated_userid(request)
+        param_model_uuid = request.params.get('model_run_id') if 'model_run_id' in request.params else ''
+        if  param_model_uuid:
+            validuuid=valid_uuid(param_model_uuid)
+            if validuuid is True:
+                model_uuid = param_model_uuid
+            else:
+                model_uuid = ''
+                return HTTPBadRequest('modelrun UUID provided is not a valid UUID')
+        else:
+            model_uuid = ''
         research_name = request.params.get('researcher_name') if 'researcher_name' in request.params else ''
-	keywords = request.params.get('model_keywords') if 'model_keywords' in request.params else ''
-	modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
-	desc = request.params.get('description') if 'description' in request.params else ''
+        keywords = request.params.get('model_keywords') if 'model_keywords' in request.params else ''
+        modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
+        desc = request.params.get('description') if 'description' in request.params else ''
+        uid = request.params.get('userid') if 'userid' in request.params else ''
 
-	filter_cond=[]
+        filter_cond=[]
+
+        if userid is None:
+            filter_cond.append(Modelruns.public==True)
+            if 'mymodels' in params:
+                return HTTPForbidden("mymodels is only available to logged in users.")
+        else:
+            if 'mymodels' in params:
+                filter_cond.append(Modelruns.userid==userid)
+            else:
+                filter_cond.append(or_(Modelruns.public==True,Modelruns.userid==userid))
+
+        if uid:
+                print "Model Run UID: %s" % uid
+                filter_cond.append(Modelruns.userid==uid)
 
         if model_uuid:
                 print "Model Run UUID: %s" % model_uuid
                 filter_cond.append(Modelruns.model_run_id==model_uuid)
 
-	if research_name:
-		print "Research Name: %s" % research_name
+        if research_name:
+                print "Research Name: %s" % research_name
                 filter_cond.append(Modelruns.researcher_name.contains(research_name))
-#		filter_cond.append("Modelruns.researcher_name=='%s'" % research_name)
-	if keywords:
-		print "Keywords: %s" % keywords
-		filter_cond.append(Modelruns.model_keywords.contains(keywords))
-	if modelName:
-		print "Model Name: %s" % modelName
-		filter_cond.append(Modelruns.model_run_name.contains(modelName))
-#	if model_uuid:
-#		print "Model Run UUID: %s" % model_uuid
-#		filter_cond.append(Modelruns.model_run_id==model_uuid)
-	if desc:
-		print "Description: %s" % desc
-		filter_cond.append(Modelruns.description.contains(desc))
+        if keywords:
+                print "Keywords: %s" % keywords
+                filter_cond.append(Modelruns.model_keywords.contains(keywords))
+        if modelName:
+                print "Model Name: %s" % modelName
+                filter_cond.append(Modelruns.model_run_name.contains(modelName))
+        if desc:
+                print "Description: %s" % desc
+                filter_cond.append(Modelruns.description.contains(desc))
+
 
 	print "\n\n********************"
 	print "FILTER CONDITIONS: %s" % filter_cond
 	print "******************************\n\n"
 
 	
-	#model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(Modelruns.researcher_name=="William Hudspeth")
-	#model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
 
 	if (filter_cond and len(filter_cond)>=1):
 	    	print "Filter conditions found with 1 parameter..."
 		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
-#	elif (filter_cond and len(filter_cond)>1):
-#		print "Filter conditions found with more than 1 parameter..."	
-#	        #filterString = "and_(%s)" % filterString
-#                model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
 	else:
 		print "Filter conditions not found...printing all records"
 		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
@@ -223,6 +247,7 @@ def search_categories(request):
     es_password = request.registry.settings['es_user'].split(':')[-1]
 
     es_url = es_connection + es_index + '/' + es_type +'/_search'
+    print es_url
 
     #set up the basic query with embargo/active flags at the dataset level BUT not the app here 
     #because the categories could be different for the apps (i.e. 'climate' for epscor and 'nrcs' for rgis (don't do that, though))
@@ -249,7 +274,7 @@ def search_categories(request):
         if len(parts) == 1:
             #get subthemes
             facets = {
-                "categories": {"terms": {"field": "subtheme", "size": 100, "order": "term"},
+                "categories": {"terms": {"field": "category_facets.subtheme", "size": 100, "order": "term"},
                     "nested": "category_facets",
                     "facet_filter": {
                         "query": {
@@ -257,8 +282,8 @@ def search_categories(request):
                                 "query": {"match_all": {}},
                                 "filter": {
                                     "and": [
-                                        {"term": {"apps": app.lower()}},
-                                        {"term": {"theme": parts[0]}}
+                                        {"term": {"category_facets.apps": app.lower()}},
+                                        {"term": {"category_facets.theme": parts[0]}}
                                     ]
                                 }
                             }
@@ -273,7 +298,7 @@ def search_categories(request):
         elif len(parts) == 2:
             #get groupnames
             facets = {
-                "categories": {"terms": {"field": "groupname", "size": 100, "order": "term"},
+                "categories": {"terms": {"field": "category_facets.groupname", "size": 100, "order": "term"},
                     "nested": "category_facets",
                     "facet_filter": {
                         "query": {
@@ -281,9 +306,9 @@ def search_categories(request):
                                 "query": {"match_all": {}},
                                 "filter": {
                                     "and": [
-                                        {"term": {"apps": app.lower()}},
-                                        {"term": {"theme": parts[0]}},
-                                        {"term": {"subtheme": parts[1]}}
+                                        {"term": {"category_facets.apps": app.lower()}},
+                                        {"term": {"category_facets.theme": parts[0]}},
+                                        {"term": {"category_facets.subtheme": parts[1]}}
                                     ]
                                 }
                             }
@@ -295,6 +320,7 @@ def search_categories(request):
 
             level = 2
         else:
+            print "no facet level"
             return return_no_results()
     else:
         #get themes with datasets in the app
@@ -316,7 +342,7 @@ def search_categories(request):
                                 },
                                 "filter": {
                                 	    "and": [
-                                    	    {"term": {"apps": "epscor"}}
+                                    	    {"term": {"category_facets.apps": "epscor"}}
                                     ]
                                 }
                             }
@@ -328,7 +354,7 @@ def search_categories(request):
         '''
         #the field of the nested set, the size (for now) is larger than the set, and order by the term alphabetically
         facets = {
-            "categories": {"terms": {"field": "theme", "size": 700, "order": "term"},
+            "categories": {"terms": {"field": "category_facets.theme", "size": 700, "order": "term"},
                 "nested": "category_facets",
                 "facet_filter": {
                     "query": {
@@ -336,7 +362,7 @@ def search_categories(request):
                             "query": {"match_all": {}},
                             "filter": {
                                 "and": [
-                                    {"term": {"apps": app.lower()}}
+                                    {"term": {"category_facets.apps": app.lower()}}
                                 ]
                             }
                         }
@@ -351,9 +377,12 @@ def search_categories(request):
         return query
 
     results = requests.post(es_url, data=json.dumps(query), auth=(es_user, es_password))
-    
+    print json.dumps(query)
+    print results.text    
     data = results.json()
+    print data
     if 'facets' not in data:
+        print "no facets in data"
         return return_no_results()
 
     #TODO: get rid of the cls element (not used, kinda stupid)
@@ -373,6 +402,69 @@ def search_categories(request):
     response.content_type="application/json"    
     return response
 
+def get_available_uuids(request):
+    userid = authenticated_userid(request)
+    print userid
+    if userid is None:
+        isavailable = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
+        isavailable_query = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True)
+    else:
+        isavailable = DBSession.query(Modelruns.model_run_id).filter(or_(Modelruns.public==True,Modelruns.userid==userid)).all() 
+        isavailable_query = DBSession.query(Modelruns.model_run_id).filter(or_(Modelruns.public==True,Modelruns.userid==userid))
+    print isavailable_query
+    available = []
+    for row in isavailable:
+        available.append( row[0] )
+
+    return available
+    
+
+
+#------------------------------------------------------------------------------
+
+def generate_researcher_list(request, ext, app, doctypes, name_contains):
+    if name_contains:
+        name_contains = '%' + name_contains + '%'
+        list = DBSession.query("researcher_name").from_statement( text( "SELECT model_runs.researcher_name FROM gstoredata.model_runs WHERE model_runs.researcher_name LIKE :contains" ).params(contains=name_contains) ).all();
+    else:
+        list = DBSession.query("researcher_name").from_statement( text("SELECT model_runs.researcher_name FROM gstoredata.model_runs" )).all()
+
+    base_url = request.registry.settings['BALANCER_URL']
+    researchers = []
+    for item in list:
+        if item not in researchers:
+            researchers.append(item)
+
+    response = Response()
+
+    response.content_type = 'application/json'
+    response.app_iter = json.dumps(researchers)
+
+    return response
+
+
+@view_config(route_name='search_researchers')
+def search_researchers(request):
+    """
+    PARAMS:
+
+    :param request:
+    :return:
+    """
+
+    ext = 'json'
+    app = request.matchdict['app']
+
+    doctypes = 'researchers'
+
+    params = normalize_params(request.params)
+
+    contains = params.get('contains') if 'contains' in params else None
+
+    return generate_researcher_list(request, ext, app, doctypes, contains)
+
+
+#------------------------------------------------------------------------------
 
 #search for any of the doctypes in es 
 @view_config(route_name='searches')
@@ -412,6 +504,14 @@ def search_doctypes(request):
     
     Raises:
     """
+    #userid = authenticated_userid(request)
+    #print userid
+    #isavailable = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
+    #cleanavailable = []
+    #for row in isavailable:
+    #    cleanavailable.append( row[0] )
+    #print cleanpublic
+    cleanavailable = get_available_uuids(request)
     ext = request.matchdict['ext']
     app = request.matchdict['app']
 
@@ -460,7 +560,7 @@ def search_doctypes(request):
     print "Password: %s" % request.registry.settings['es_user'].split(':')[-1]
 
     try:
-        searcher.parse_basic_query(app, params)
+        searcher.parse_basic_query(app, params, available_uuids=cleanavailable)
     except Exception as ex:
         return HTTPBadRequest(json.dumps({"query": searcher.query_data, "msg": ex.message}))
 
@@ -593,6 +693,147 @@ def search(request):
     response.content_type="application/json"    
     #return response
 
+def get_valid_inventory_params():
+    params = []
+    # v add more params here v 
+    params.append('researchers')
+    params.append('modelname')
+    params.append('statename')
+    params.append('watershedname')
+    params.append('keywords')
+    # ^ add more params here ^
+    return params
+
+def handle_param(param):
+    if param == 'researchers':
+        query = DBSession.query(Users.userid, Users.firstname, Users.lastname)
+        # v add filters here v
+        # ^ add filters here ^
+        queryall = query.order_by(Users.lastname.asc()).all()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'userid':item[0]})
+            listitem.update({'name':item[1] + " " + item[2]})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'researchers':sublist})
+        print list
+        return list
+    elif param == 'modelname':
+        query = DBSession.query(Category.theme)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.theme.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'model':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'modelname':sublist})
+        return list
+    elif param == 'statename':
+        query = DBSession.query(Category.subtheme)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.subtheme.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'state':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'statename':sublist})
+        return list
+    elif param == 'watershedname':
+        query = DBSession.query(Category.groupname)
+        # v add filters here v
+        query = query.filter(not_(Category.id==1))
+        # ^ add filters here ^
+        queryall = query.order_by(Category.groupname.asc()).distinct()
+        list = {}
+        sublist = []
+        num = 0
+        for item in queryall:
+            num = num + 1
+            listitem = {}
+            listitem.update({'watershed':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'watershedname':sublist})
+        return list
+    elif param == 'keywords':
+        query = DBSession.query(Modelruns.model_keywords)
+        # v add filters here v
+        # ^ add filters here ^
+        queryall = query.distinct()
+        keywords = []
+        for item in queryall:
+            words = item[0].split(',')
+            for word in words:
+                word = word.strip()
+                if word not in keywords:
+                    keywords.append(word)
+        list = {}
+        sublist = []
+        num = 0
+        for item in keywords:
+            num = num + 1
+            listitem = {}
+            listitem.update({'keyword':item})
+            sublist.append(listitem)
+        list.update({'param':param})
+        list.update({'num':num})
+        list.update({'keywords':sublist})
+        return list
+
+    return [param]
+
+@view_config(route_name='inventory')
+def inventory_search(request):
+    '''
+    return file of requested type with inventory of requested items or list of available parameters if no parameters are given
+    '''
+#fart
+    app = request.matchdict['app']
+    ext = request.matchdict['ext']
+
+    params = normalize_params(request.params)
+
+    invparams = get_valid_inventory_params()
+    print invparams
+    print params
+    resp = []
+    if params:
+        for param in params:
+           print param
+           if param in invparams:
+               resp.append(handle_param(param))
+           else:
+               resp.append({'invalid parameter':param})
+        response = Response(json.dumps(resp))
+        response.content_type = 'application/json'
+    else:
+        response = Response(json.dumps({'valid params':invparams}))
+        response.content_type = 'application/json'
+    
+    return response
 
 #TODO: finish this
 @view_config(route_name='search_features', renderer='json')

@@ -2,9 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
 <head>
     <title>Virual Watershed API</title>
-    <link href="${base_url}/docs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <link href="${base_url}/docs/docs.css" rel="stylesheet" media="screen">
-
+    <link href="/docs/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/docs/docs.css" rel="stylesheet" media="screen">
     <style>
         /** via http://getbootstrap.com/examples/cover/#**/
         body {
@@ -20,6 +19,10 @@
         .wrap-inner {
             display:table-cell;
             vertical-align:top;
+        }
+        .status { 
+            padding: 30px;
+            float:right 
         }
 
         .cover-container {
@@ -78,6 +81,16 @@
     </style>
 </head>
 <body>
+        <div id="right" class="status">
+          <span tal:condition="logged_in">
+              <a href="${request.application_url}/logout">Logout</a>
+          </span>
+        </div>
+        <div id="right" class="status">
+          <span tal:condition="not:logged_in">
+              <a href="${request.application_url}/login">Login</a>
+          </span>
+        </div>
     <div id="wrap">
         <div class="wrap-inner">
             <div class="cover-container">
@@ -87,7 +100,7 @@
                     <p class="lead"> <font size="3">A web framework for data discovery, delivery and documentation of watershed modeling.</font></p>
                     <ul>
                         <li><a class="btn btn-lg btn-default" href="${base_url}/docs/index.html">Learn more</a></li>
-                        <li><a class="btn btn-lg btn-default" href="mailto:gstore@edac.unm.edu">Contact us</a></li>
+                        <li><a class="btn btn-lg btn-default" href="mailto:wcwave@edac.unm.edu">Contact us</a></li>
                     </ul>
                 </div>
             </div>
@@ -98,7 +111,7 @@
         <div class="container">
             <div class="col-sm-6">
                 <p><a href="http://westernconsortium.org/">westernconsortium.org</a></p>
-                <p><a href="mailto:virtualwatershed@edac.unm.edu">virtualwatershed[at]edac.unm.edu</a></p>
+                <p><a href="mailto:wcwave@edac.unm.edu">wcwave[at]edac.unm.edu</a></p>
               <!--  <p><a href="${base_url}/docs/tos.html">Terms of Service</a></p> -->
             </div>
             <div class="col-sm-6">

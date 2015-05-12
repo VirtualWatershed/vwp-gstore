@@ -1,11 +1,17 @@
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
-
 from pyramid.response import Response
 from pyramid.view import notfound_view_config
-from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented
+from pyramid.httpexceptions import HTTPNotFound, HTTPNotImplemented, HTTPUnauthorized
 
+
+#for auth
+from pyramid.view import forbidden_view_config
+from pyramid.view import view_config
+from pyramid.security import Allow, Authenticated, remember, forget
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 
 from .models import DBSession
 
@@ -13,6 +19,7 @@ from .models import DBSession
 from pyramid.events import subscriber
 from pyramid.events import NewRequest
 
+from views.security import groupfinder
 
 #TODO: put in some reasonable error messages. 
 #custom error methods   
@@ -36,7 +43,7 @@ def any_of(segment_name, *allowed):
         if info['match'][segment_name] in allowed:
             return True
     return predicate
-applist = any_of('app', 'my_app')
+applist = any_of('app', 'vwp')
 
 #check for the dataset type (original vs. derived) for downloads
 def any_type(segment_name, *allowed):
@@ -84,6 +91,14 @@ def cleanup_callback(request):
 def add_cleanup_callback(event):
     event.request.add_finished_callback(cleanup_callback)    
 
+#def groupfinder(userid,request):
+#    print "function groupfinder() called"
+#    #user
+
+
+class RootFactory(object):
+    def __init__(self, request):
+        self.__acl__ = [(Allow, Authenticated, 'delete'),(Allow, Authenticated, 'test'),(Allow, Authenticated, 'add_model_run'),(Allow, Authenticated, 'add_dataset'),(Allow, Authenticated, 'createuser'),(Allow, Authenticated, 'loggedin'),(Allow, 'group:developers', 'developers'),(Allow, Authenticated, 'threddscheck'),(Allow,'group:admins', 'admin')]
 
 '''
 all the routing
@@ -91,8 +106,9 @@ all the routing
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    
-    config = Configurator(settings=settings)    
+    authn_policy = AuthTktAuthenticationPolicy('EDACsecret', callback=groupfinder, hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
+    authz_policy = ACLAuthorizationPolicy()
+    config = Configurator(root_factory=RootFactory,authentication_policy=authn_policy,authorization_policy=authz_policy,settings=settings)    
     config.include('pyramid_chameleon')
     config.include('pyramid_mako')
     config.scan('.models')
@@ -105,11 +121,27 @@ def main(global_config, **settings):
     #pointer to the static xslts
     config.add_static_view(name='xslts', path='gstore_v3:../resources/xslts')
 
+    config.add_static_view(name='static', path='gstore_v3:./static')
     #pointer to the static documentation
     config.add_static_view(name='docs', path='gstore_v3:../resources/docs')
 
+    config.add_static_view(name='developer', path='gstore_v3:../resources/devdocs', permission='developers')
+
     config.add_route('home', '/')    
 
+#auth routes
+    config.add_route('private', '/private')
+    config.add_route('createuser', '/createuser')
+    config.add_route('login', '/login')
+    config.add_route('apilogin', '/apilogin')
+    config.add_route('logout', '/logout')
+    config.add_route('apicreateuser', '/apicreateuser')##not sure we want this.
+    config.add_route('changemypassword','/changemypassword')
+#for requesting a password reset
+    config.add_route('passwordreset','/passwordreset')
+#for compleating the password reset
+    config.add_route('reset','/reset')
+    
 #app routes (stats, etc)
     config.add_route('app_stats', 'apps/{app}/statistics/{stat}.{ext}', custom_predicates=(applist,))
     
@@ -141,7 +173,10 @@ def main(global_config, **settings):
     config.add_route('search_categories', '/apps/{app}/search/categories.json', custom_predicates=(applist,))
     config.add_route('search_features', '/apps/{app}/search/features.json', custom_predicates=(applist,))
     config.add_route('search_modelruns', '/apps/{app}/search/modelruns.json', custom_predicates=(applist,))
+    #config.add_route('searches', '/apps/{app}/search/{doctypes}.{ext}', custom_predicates=(applist,))
+    config.add_route('search_researchers', '/apps/{app}/search/researchers.json', custom_predicates=(applist,))
     config.add_route('searches', '/apps/{app}/search/{doctypes}.{ext}', custom_predicates=(applist,))
+
 
     config.add_route('search_within_collection', '/apps/{app}/search/collection/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/datasets.{ext}', custom_predicates=(applist,))
     
@@ -196,10 +231,12 @@ def main(global_config, **settings):
 
 #to the dataset
     #VW specific.
-    config.add_route('check_auth', '/apps/{app}/auth', request_method='GET')
+    config.add_route('threddscheck','/threddscheck', request_method='GET')
+    config.add_route('edit_model_run', '/apps/{app}/editmodelrun', request_method='PUT')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')
+    config.add_route('delete_model_id', '/apps/{app}/deletemodelid', request_method='DELETE')
 
    #use the integer dataset_id or the uuid
     config.add_route('dataset', '/apps/{app}/datasets/{id:\d+|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/{basename}.{type}.{ext}', custom_predicates=(applist, typelist,))
@@ -207,7 +244,6 @@ def main(global_config, **settings):
     config.add_route('update_dataset', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}', custom_predicates=(applist,), request_method='PUT') 
     config.add_route('update_dataset_index', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/index', custom_predicates=(applist,), request_method='PUT')
     config.add_route('dataset_services', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/services.{ext}', custom_predicates=(applist,))
-
     config.add_route('dataset_streaming', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/dataset.{ext}', custom_predicates=(applist,))
     config.add_route('dataset_statistics', '/apps/{app}/datasets/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}/statistics.{ext}', custom_predicates=(applist,))
 
@@ -242,6 +278,12 @@ def main(global_config, **settings):
     config.add_route('vocab', '/apps/{app}/vocabs/{type}/{id:[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}}.{ext}', custom_predicates=(applist,))
     config.add_route('add_vocab', '/apps/{app}/vocabs/{type}', custom_predicates=(applist,), request_method='PUT')
     
+#to inventories
+    config.add_route('inventory', '/apps/{app}/inventory.{ext}', custom_predicates=(applist,)) 
+
+    config.add_route('group_manager', '/admin/managegroups')
+    config.add_route('group_manager_frontend', '/admin/groupmanager')
+
     config.scan('gstore_v3')
     return config.make_wsgi_app()
 

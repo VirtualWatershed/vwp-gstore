@@ -22,7 +22,6 @@ from ..lib.mongo import gMongoUri
 from ..lib.es_indexer import DatasetIndexer
 from ..lib.spatial_streamer import *
 
-#this is a test
 
 #TODO: add dataset statistics view - min/max per attribute, histogram info, etc
 
@@ -454,12 +453,14 @@ def indexer(request):
 
 
 
-#HB
-@view_config(route_name='add_data', request_method='POST')
+@view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
     filename = request.POST['file'].filename
+    print filename
     input_file = request.POST['file'].file
+    print input_file
     modelid = request.params['modelid'].decode('utf-8')
+    print modelid
     #print modelid
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]
@@ -485,7 +486,7 @@ def add_data(request):
 '''
 dataset maintenance
 '''
-@view_config(route_name='add_dataset', request_method='PUT')
+@view_config(route_name='add_dataset', request_method='PUT', permission='add_dataset')
 def add_dataset(request):
     """
 
@@ -671,8 +672,8 @@ def add_dataset(request):
     #add the category set (if not in categories) and assign to dataset
     for category in categories:
         theme = category['modelname']
-        subtheme = category['location']
-        groupname = category['state']
+        subtheme = category['state']
+        groupname = category['location']
 
         c = DBSession.query(Category).filter(and_(Category.theme==theme, Category.subtheme==subtheme, Category.groupname==groupname)).first()
         if not c:
@@ -750,7 +751,6 @@ def add_dataset(request):
         settings = src['settings'] if 'settings' in src else {}
 
         files = src['files']
-#HB
         for f in files:
             print f
             #check if the file in the datasets is there.
