@@ -12,7 +12,7 @@ from ..models.sources import Source, SourceFile, MapfileSetting
 from ..models.metadata import OriginalMetadata, DatasetMetadata
 from ..models.apps import GstoreApp
 
-import os, json, tempfile
+import os, json, tempfile, requests
 from xml.sax.saxutils import escape
 
 from ..lib.utils import *
@@ -451,6 +451,27 @@ def indexer(request):
         return HTTPServerError('failed to put index document for %s' % d.uuid)
 
 
+@view_config(route_name='gettoken', request_method='GET', permission='add_dataset', renderer='json')
+def gettoken(request):
+    swift_tenant=request.registry.settings['swift_tenant']
+    swift_username=request.registry.settings['swift_username']
+    swift_password=request.registry.settings['swift_password']
+    swift_auth=request.registry.settings['swift_auth']
+
+    logindata = {
+        "auth": {
+            "tenantName": swift_tenant,
+            "passwordCredentials": {
+                "username": swift_username,
+                "password": swift_password
+            }
+        }
+    }
+
+    headers = {'content-type': 'application/json', 'accept': 'application/json'}
+    r = requests.post(url=swift_auth, data=json.dumps(logindata), headers=headers)
+    token=r.json()
+    return token
 
 
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')

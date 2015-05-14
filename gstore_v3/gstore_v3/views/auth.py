@@ -238,7 +238,7 @@ def changemypassword(request):
         newpassword1 = request.params['newpassword1']
         newpassword2 = request.params['newpassword2']
         if newpassword1==newpassword2:
-            pwtest=passcheck(password)
+            pwtest=passcheck(newpassword1)
             if pwtest is True:
                 currentuser = DBSession.query(Users.salt,Users.password).filter(Users.userid==userid).first()
                 salt=currentuser.salt
