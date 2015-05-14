@@ -15,11 +15,6 @@ from ..models.users import (
 from ..models.password_reset_codes import (
     Password_Reset_Codes,
     )
-from ..models.resources import (
-    ResourceStates,
-    ResourceCountries,
-    ResourceInstitutions
-    )
 
 
 import binascii
@@ -30,13 +25,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import uuid
-import re
-
-def emailcheck(email):
-    EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
-
-    return EMAIL_REGEX.match(email)
-
 
 #*********************************************************************************************************************
 def passcheck(passwd):
@@ -175,7 +163,7 @@ def reset(request):
     referrer = '/'
     came_from = request.params.get('came_from', referrer)
 
-    message = 'Your password must be at least 8 characters long and have upper case, lowercase, number, and a special character.'
+    message = ''
     password = ''
     password2 = ''
     if 'form.submitted' in request.params:
@@ -202,7 +190,7 @@ def reset(request):
                     message = 'Your password has changed.'
                     return HTTPFound(location = came_from, headers = headers)
             else:
-                message = 'Your password must be at least 8 characters long and have upper case, lowercase, number, and a special character.'
+                message = 'Your passsword must be at least 8 characters long and have upper case, lowercase, number, and a specal character.'
 
 
 
@@ -229,7 +217,7 @@ def changemypassword(request):
     if referrer == login_url:
         referrer = '/' # never use the login form itself as came_from
     came_from = request.params.get('came_from', referrer)
-    message = 'Your password must be at least 8 characters long and have upper case, lowercase, number, and a special character.'
+    message = ''
     password = ''
     newpassword1 = ''
     newpassword2 = ''
@@ -238,7 +226,7 @@ def changemypassword(request):
         newpassword1 = request.params['newpassword1']
         newpassword2 = request.params['newpassword2']
         if newpassword1==newpassword2:
-            pwtest=passcheck(password)
+            pwtest=passcheck(newpassword1)
             if pwtest is True:
                 currentuser = DBSession.query(Users.salt,Users.password).filter(Users.userid==userid).first()
                 salt=currentuser.salt
@@ -257,7 +245,7 @@ def changemypassword(request):
                 else:
                      message = 'That is not your current password'
             else:
-                message = 'Your password must be at least 8 characters long and have upper case, lowercase, number, and a special character.'
+                message = 'Your passsword must be at least 8 characters long and have upper case, lowercase, number, and a specal character.'
         else:
             message = 'Failed to reset password: you need to type your new password twice.'
 
@@ -326,81 +314,46 @@ def createuser(request):
         came_from = request.params.get('came_from', referrer)
         firstname = ''
         lastname = ''
-        userid = ''
         email = ''
         address1 = ''
         address2 = ''
         city = ''
-        state = [("","Select One")]
+        state = ''
         zipcode = ''
         tel_voice = ''
         tel_fax = ''
-        country = [("","Select One")]
+        country = ''
         message = ''
-        institution = [("","Select One","")]
-        states = DBSession.query(ResourceStates).all()
-        for item in states:
-            newitem = (item.initials, item.name)
-            state.append(newitem)
-
-        countries = DBSession.query(ResourceCountries).all()
-        for item in countries:
-            newitem = (item.initials, item.name)
-            country.append(newitem)
-
-        institutions = DBSession.query(ResourceInstitutions).all()
-        for item in institutions:
-            newitem = (item.id, item.name, item.initials)
-            institution.append(newitem)
-
+        userid = ''
  #       password = ''
         if 'form.submitted' in request.params:
+            userid = request.params['userid']
             firstname = request.params['firstname']
             lastname = request.params['lastname']
             email = request.params['email']
-            userid = request.params['email']
 #            password = request.params['password']
             address1 = request.params['address1']
             address2 = request.params['address2']
             city = request.params['city']
-            state_init = request.params['state']
-            print state_init
-            
+            state = request.params['state']
             zipcode = request.params['zipcode']
             tel_voice = request.params['tel_voice']
             tel_fax = request.params['tel_fax']
-            country_init = request.params['country']
-            print country_init
-
+            country = request.params['country']
             salt = os.urandom(33).encode('base_64')
             password = os.urandom(33).encode('base_64')
             hashed_password = hashlib.sha512(password + salt).hexdigest()
-            institution_init = request.params['institution']
-            print institution_init
 
             logmessage="User created: %s" % userid
             print logmessage
             existUser=DBSession.query(Users.userid).filter(Users.userid==userid).first()
             print "Existing user?: %s" % existUser
 
-            check_email = emailcheck(email)
-            print "is an email?:" + str(check_email)
-
-            if email == "":
-                message="E-Mail is Required"
-            elif check_email is None:
-                message="Invalid E-Mail form"
-            elif firstname == "":
-                message="First Name is Required"
-            elif lastname == "":
-                message="Last Name is Required"
-            elif institution_init == "":
-                message="Institution is Required"
-            elif(existUser):
+            if(existUser):
                 print "Can't add %s, User already exists" % userid
                 message="Can't add user, userid exists in database"
             else:
-                newuser = Users(userid=userid,firstname=firstname,lastname=lastname,city=city,address1=address1,address2=address2,state=state_init,zipcode=zipcode,tel_voice=tel_voice,tel_fax=tel_fax,country=country_init,email=email,salt=salt,password=hashed_password,institution=institution_init)
+                newuser = Users(userid=userid,firstname=firstname,lastname=lastname,city=city,address1=address1,address2=address2,state=state,zipcode=zipcode,tel_voice=tel_voice,tel_fax=tel_fax,country=country,email=email,salt=salt,password=hashed_password)
                 try:
                     DBSession.add(newuser)
                     DBSession.commit()
@@ -481,7 +434,7 @@ def createuser(request):
                 except Exception as err:
                     return HTTPServerError(err)
 
-        print state
+
         return dict(
             url = request.application_url + '/createuser',
             came_from = came_from,
@@ -497,7 +450,7 @@ def createuser(request):
             tel_fax = tel_fax,
             country = country,
             message = message,
-            institution = institution
+            userid = userid,
             )
 
 
