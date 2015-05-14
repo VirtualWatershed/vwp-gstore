@@ -233,7 +233,6 @@ def main(global_config, **settings):
     #VW specific.
     config.add_route('threddscheck','/threddscheck', request_method='GET')
     config.add_route('edit_model_run', '/apps/{app}/editmodelrun', request_method='PUT')
-    config.add_route('gettoken', '/gettoken', request_method='GET')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')
