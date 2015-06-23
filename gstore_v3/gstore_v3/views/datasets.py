@@ -147,7 +147,7 @@ def dataset(request):
 
     #check for a source for everyone
     src = d.get_source(datatype, format)
-    if not src and d.taxonomy in ['geoimage', 'file', 'service']:
+    if not src and d.taxonomy in ['geoimage', 'file', 'service','netcdf_isnobal']:
         return HTTPNotFound()
 
     #outside link so redirect
@@ -196,7 +196,7 @@ def dataset(request):
     #TODO: and also, what to do about that if there are in fact datasets with original shp and derived shp in clusterdata?
 
     #no zip. need to pack it up (raster/file) or generate it (vector)
-    if taxonomy in ['geoimage', 'file']:
+    if taxonomy in ['geoimage', 'file', 'netcdf_isnobal']:
         #pack up the zip to the formats cache
         output = src.pack_source(output_path, outname, xslt_path, metadata_info)
         
@@ -470,9 +470,17 @@ def gettoken(request):
 
     headers = {'content-type': 'application/json', 'accept': 'application/json'}
     r = requests.post(url=swift_auth, data=json.dumps(logindata), headers=headers)
-    token=r.json()
-    return token
-
+    tokn=r.json()
+    toknid = tokn['access']['token']['id']
+    services = tokn['access']['serviceCatalog']
+    for item in services:
+        if item['name'] =='swift':
+            swifturl = item['endpoints'][0]['publicURL']
+    list = {
+        "preauthtoken":toknid,
+        "preauthurl": swifturl
+    }
+    return list
 
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
