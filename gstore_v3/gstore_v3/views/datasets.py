@@ -12,7 +12,7 @@ from ..models.sources import Source, SourceFile, MapfileSetting
 from ..models.metadata import OriginalMetadata, DatasetMetadata
 from ..models.apps import GstoreApp
 
-import os, json, tempfile
+import os, json, tempfile, requests
 from xml.sax.saxutils import escape
 
 from ..lib.utils import *
@@ -147,7 +147,7 @@ def dataset(request):
 
     #check for a source for everyone
     src = d.get_source(datatype, format)
-    if not src and d.taxonomy in ['geoimage', 'file', 'service']:
+    if not src and d.taxonomy in ['geoimage', 'file', 'service','netcdf_isnobal']:
         return HTTPNotFound()
 
     #outside link so redirect
@@ -196,7 +196,7 @@ def dataset(request):
     #TODO: and also, what to do about that if there are in fact datasets with original shp and derived shp in clusterdata?
 
     #no zip. need to pack it up (raster/file) or generate it (vector)
-    if taxonomy in ['geoimage', 'file']:
+    if taxonomy in ['geoimage', 'file', 'netcdf_isnobal']:
         #pack up the zip to the formats cache
         output = src.pack_source(output_path, outname, xslt_path, metadata_info)
         
@@ -451,7 +451,36 @@ def indexer(request):
         return HTTPServerError('failed to put index document for %s' % d.uuid)
 
 
+@view_config(route_name='gettoken', request_method='GET', permission='add_dataset', renderer='json')
+def gettoken(request):
+    swift_tenant=request.registry.settings['swift_tenant']
+    swift_username=request.registry.settings['swift_username']
+    swift_password=request.registry.settings['swift_password']
+    swift_auth=request.registry.settings['swift_auth']
 
+    logindata = {
+        "auth": {
+            "tenantName": swift_tenant,
+            "passwordCredentials": {
+                "username": swift_username,
+                "password": swift_password
+            }
+        }
+    }
+
+    headers = {'content-type': 'application/json', 'accept': 'application/json'}
+    r = requests.post(url=swift_auth, data=json.dumps(logindata), headers=headers)
+    tokn=r.json()
+    toknid = tokn['access']['token']['id']
+    services = tokn['access']['serviceCatalog']
+    for item in services:
+        if item['name'] =='swift':
+            swifturl = item['endpoints'][0]['publicURL']
+    list = {
+        "preauthtoken":toknid,
+        "preauthurl": swifturl
+    }
+    return list
 
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
