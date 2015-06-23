@@ -306,6 +306,7 @@ class Dataset(Base):
             return null
             
         if geoimage:
+            print "geoimage found by Bill"
             get tif if tif
             get sid if sid
             get ecw if ecw
@@ -325,17 +326,19 @@ class Dataset(Base):
         """
         if self.taxonomy in ['file', 'table', 'service']:
             return None, None
-        elif self.taxonomy == 'geoimage':
+        elif self.taxonomy in ['geoimage', 'netcdf_isnobal']:
+            print "geoimage found"
             srcs = self.sources
             src = None
             ext = ''
             #current supported formats
-            for r in ['tif', 'img', 'sid', 'ecw']:
+            for r in ['tif', 'img', 'sid', 'ecw', 'nc']:
                 src = [s for s in srcs if s.extension == r and s.active == True]
                 if src:
                     ext = r
                     break
             if not src:
+                print "no source"
                 #no match for valid raster type
                 return None, None
 
@@ -425,7 +428,7 @@ class Dataset(Base):
             #TODO: change the relate to only include active sources
             srcs = [s for s in self.sources if s.active]
 
-            if self.taxonomy == 'geoimage':
+            if self.taxonomy in ['geoimage', 'netcdf_isnobal']:
                 #add the downloads by source
                 #TODO: maybe compare to the formats list?
                 dlds = [(s.set, s.extension) for s in srcs] # if not s.is_external]
@@ -741,6 +744,8 @@ class Dataset(Base):
             preferred = ['zip', 'shp', 'kml', 'gml', 'geojson', 'json', 'csv', 'xls']
         elif self.taxonomy == 'table':
             preferred = ['zip', 'csv', 'xls', 'json']
+        elif self.taxonomy in ['netcdf_isnobal']:
+            preferred = ['nc', 'zip']
 
         canonical_format = ''
         for p in preferred:
