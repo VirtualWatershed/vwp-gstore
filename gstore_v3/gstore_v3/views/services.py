@@ -306,6 +306,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         #TODO: check on the wcs_formats list & compare to outputformats - ARE THE NAMES CORRECT?
         layer.setProjection('+init=epsg:%s' % (d.orig_epsg))
         layer.setProcessing('CLOSE_CONNECTION=DEFER')
+	layer.setProcessing('SCALE=AUTO')
         layer.type = mapscript.MS_LAYER_RASTER
 #hb
 #        layer.offsite = mapscript.colorObj( 0 , 0 , 0 )
