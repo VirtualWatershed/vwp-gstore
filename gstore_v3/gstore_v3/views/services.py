@@ -189,6 +189,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
     
     Raises:
     """
+    subdataset_metadata=""
     valid_basename = 'g_' + d.basename if d.basename[0] in '0123456789' else d.basename
 
     layer = mapscript.layerObj()
