@@ -1,7 +1,8 @@
 from pyramid.view import view_config
 from pyramid.response import Response, FileResponse
 from pyramid.renderers import render_to_response
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPServiceUnavailable
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPServiceUnavailable, HTTPUnprocessableEntity 
+from pyramid.security import Allow, Authenticated, remember, forget, authenticated_userid, unauthenticated_userid
 
 from sqlalchemy.exc import DBAPIError
 
@@ -484,12 +485,25 @@ def gettoken(request):
 
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
+    userid = authenticated_userid(request)
     filename = request.POST['file'].filename
     print filename
     input_file = request.POST['file'].file
     print input_file
     modelid = request.params['modelid'].decode('utf-8')
     print modelid
+    full_model_query=DBSession.query(Modelruns.model_run_id,Modelruns.userid).filter((Modelruns.model_run_id==modelid) & (Modelruns.userid==userid)).first()
+    userid_query=DBSession.query(Modelruns.userid).filter(Modelruns.userid==userid).first()
+    uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==modelid).first()
+
+    if(full_model_query==None):
+        if(userid_query==None):
+            return HTTPUnprocessableEntity("The userid is not associated with any model runs")
+        else:
+            if(uuid_query==None):
+                return HTTPUnprocessableEntity("The model run uuid is not located in the list of model runs")
+            else:
+                return HTTPUnprocessableEntity("The model run exists, but you are not the owner and cannot add data to it.")
     #print modelid
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]
@@ -511,6 +525,61 @@ def add_data(request):
     os.rename(temp_file_path, file_path)
     return Response('OK')
 
+
+'''
+add swift dataset
+'''
+@view_config(route_name='swift_data', request_method='GET', permission='add_dataset')
+def add_swiftdata(request):
+    userid = authenticated_userid(request)
+    # command line format
+    # swift download <container> <object> --os-storage-url=<preauthurl> --os-auth-token=<preauthtoken>
+    modelid = request.params['modelid'].decode('utf-8') # container name should be the model uuid
+    filename = request.params['filename'] # object will be the name of the manifest we want to download
+    geodatapath = '/geodata/watershed-data'
+    first_two_of_uuid = modelid[:2]
+    parent_dir = os.path.join(geodatapath, first_two_of_uuid)
+    sub_dir = os.path.join(parent_dir, modelid)
+    file_path = os.path.join(parent_dir, modelid, filename)
+    full_model_query=DBSession.query(Modelruns.model_run_id,Modelruns.userid).filter((Modelruns.model_run_id==modelid) & (Modelruns.userid==userid)).first()
+    userid_query=DBSession.query(Modelruns.userid).filter(Modelruns.userid==userid).first()
+    uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==modelid).first()
+
+    if(full_model_query==None):
+        if(userid_query==None):
+            return HTTPUnprocessableEntity("The userid is not associated with any model runs")
+        else:
+            if(uuid_query==None):
+                return HTTPUnprocessableEntity("The model run uuid is not located in the list of model runs")
+            else:
+                return HTTPUnprocessableEntity("The model run exists, but you are not the owner and cannot add data to it.")
+
+    if not os.path.isdir(sub_dir):
+        return HTTPBadRequest('Model RUN UUID Not Found')
+
+    preauthurl = request.params['preauthurl']
+    preauthtoken = request.params['preauthtoken']
+
+    if not preauthurl:
+        return HTTPBadRequest('No Swift Pre-Authoriziation URL provided')
+    if not preauthtoken:
+        return HTTPBadRequest('No Swift Pre-Authorization Token provided')
+
+    command = ['swift']
+    command.append('download')
+    command.append(modelid)
+    command.append(filename)
+    command.append('--os-storage-url='+preauthurl)
+    command.append('--os-auth-token='+preauthtoken)
+    command.append('--output')
+    command.append(file_path)
+
+    try:
+        subprocess.check_call(command)
+    except subprocess.CalledProcessError:
+        return HTTPBadRequest('Unable to download file from swift server; was it properly uploaded?')
+
+    return Response('OK')
 
 '''
 dataset maintenance
