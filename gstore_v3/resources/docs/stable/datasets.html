@@ -643,6 +643,102 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                             <p>Coming soon.</p>
                         </div>
                     </li>
+                    <li id="swiftupload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">GET</span>
+                                <span class="http-path">/apps/{app}/swiftdata</span>
+                                <span class="http-name">Upload data to the server using swift</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Allows uploading of model data to the Virual Watershed filesystem using swift client intermediary.</p>
+
+
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                            <p>None.</p>
+                            <h5>Query Parameters</h5>
+                            <p>filename: Name of file</p>
+                            <p>modelid: Model Run UUID (name of container in swift) </p>
+                            <p>preauthurl: Url (provided by <a href="services.html#gettoken">gettoken</a> for swift request</p>
+                            <p>preauthtoken: Token (provided by <a href="services.html#gettoken">gettoken</a> for swift request </p>
+                            <h5>Examples:</h5>
+                            <p>Use case for creating a new model run in VWP, obtaining a swift token and uploading data to that model run using Python</p>
+                            <pre>import requests
+import os
+import subprocess
+import json
+import uuid
+url = 'https://vwp-dev.unm.edu/'
+newmodelurl = url + 'apps/vwp/newmodelrun'
+apiloginurl = url + 'apilogin'
+gettokenurl = url + 'gettoken'
+swiftuploadurl = url + 'apps/vwp/swiftdata'
+s = requests.Session()
+user = 'yourusername'
+password = 'yourpassword'
+login = s.get(apiloginurl, auth=(user,password), verify=False)
+if login.status_code == 200:
+    # Create Model
+    newuuid=str(uuid.uuid1())
+    modeldata = json.dumps({"description": "Swift Upload Example","model_run_name":"$model_run_name" ,"model_keywords":"your keywords here"})
+    newmodelname = "swift upload example " + newuuid
+    data = modeldata.replace('$model_run_name', newmodelname)
+
+    result = s.post(newmodelurl, data=data)
+
+    model_run_uuid = result.text
+
+    # Request Token
+
+    token = json.loads(s.get(gettokenurl).text)
+
+    preauthurl = token['preauthurl']
+    preauthtoken = token['preauthtoken']
+
+    # Upload to Swift using token
+
+    containername = model_run_uuid
+    filename = 'sample_inputs.nc'
+    segmentsize = 1073741824 # 1 Gig
+
+    command = ['swift']
+    command.append('upload')
+    command.append(containername)
+    command.append('-S')
+    command.append(str(segmentsize))
+    command.append(filename)
+    command.append('--os-storage-url='+preauthurl)
+    command.append('--os-auth-token='+preauthtoken)
+
+    print "Uploading..."
+
+    print command
+
+    ls_output = subprocess.check_output(command)
+
+    print ls_output
+
+    print "Telling VWP to download..."
+
+    params = {'modelid':model_run_uuid,'filename':filename,'preauthurl':preauthurl,'preauthtoken':preauthtoken}
+
+    r = s.get(swiftuploadurl, params=params)
+    if r.status_code == 200:
+        print "VWP has successfully downloaded data file!"
+    else:
+        print "Download failure"
+        print r.text
+else:
+    print "Login failure"
+    print login.text
+                            </pre>
+                            <h4>Response</h4>
+                            <p>Coming soon.</p>
+                        </div>
+                    </li>
                       <li id="newmodelrun">
                         <div class="http-definition">
                             <h3>
