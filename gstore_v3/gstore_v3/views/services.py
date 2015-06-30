@@ -247,7 +247,10 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('%s_metadata%s_href' % (service, flag), metadata_description['url'])
         layer.metadata.set('%s_metadata%s_format' % (service, flag), metadata_description['mimetype'])
         layer.metadata.set('%s_metadata%s_type' % (service, flag), metadata_description['standard'])
-    
+
+        bands = str(metadata_description['bands'])
+        processingbands = "BANDS=%s" % bands
+
     if d.taxonomy == 'vector':
         style = getStyle(d.geomtype)
 
@@ -307,6 +310,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.setProjection('+init=epsg:%s' % (d.orig_epsg))
         layer.setProcessing('CLOSE_CONNECTION=DEFER')
 	layer.setProcessing('SCALE=AUTO')
+        layer.setProcessing(processingbands)
         layer.type = mapscript.MS_LAYER_RASTER
 #hb
 #        layer.offsite = mapscript.colorObj( 0 , 0 , 0 )
@@ -632,6 +636,8 @@ def datasets(request):
         
     #and get the type (if not there assume capabilities but really that should fail)
     ogc_req = params.get('request', 'GetCapabilities')
+    #get bands for WMS
+    bands = params.get('bands') if 'bands' in params else '1'
 
     #go get the dataset
     d = get_dataset(dataset_id)   
@@ -689,7 +695,7 @@ def datasets(request):
     mapsrc, srcloc = d.get_mapsource(fmtpath, mongo_uri, int(srid), metadata_info) # the source obj, the file path
     print mapsrc
     print srcloc
-#fart
+
     #need both for a raster, but just the file path for the vector (we made it!)
     if ((not mapsrc or not srcloc) and d.taxonomy == 'geoimage') or (d.taxonomy == 'vector' and not srcloc):
         return HTTPNotFound("Problem with mapsrc or srcloc")
@@ -887,11 +893,11 @@ def datasets(request):
                 'standard': std, 
                 'mimetype': 'text/xml', 
                 'url': '%s%s/metadata/%s.xml' % (base_url, d.uuid, std), 
-                'template_path': templatepath #for the vector template location
+                'template_path': templatepath, #for the vector template location
+                'bands': bands
             }
         netcdftaxonomies = getNetCDFTaxonomies()
         if d.taxonomy in netcdftaxonomies:
-            #fart
             netcdf = Open(srcloc,GA_ReadOnly)
             netcdf_metadata=netcdf.GetMetadata()
             bandnum = netcdf_metadata['NC_GLOBAL#nsteps']
