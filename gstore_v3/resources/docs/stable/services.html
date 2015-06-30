@@ -95,6 +95,41 @@
                             <p>The OGC services have been successfully tested against QGIS 2.2 (Valmiera), ArcGIS 10.2 and gdal/ogr. </p>
                         </div>
                     </li>
+                    <li id="gettoken">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">GET</span>
+                                <span class="http-path">/gettoken</span>
+                                <span class="http-name">Receive Swift Authorization Information</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Obtain authentication information to utilize Swift file transfer services with the Virtual Watershed Platform.</p>
+                            <p>Requires proper authentication.</p>
+
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                            <h5>Query Parameters</h5>
+                            <h5>Examples</h5>
+                            <p>Obtain a token using python</p>
+                           <pre>s = requests.Session()
+login = s.get('https://vwp-dev.unm.edu/apilogin', auth=('yourusername','yourpassword'), verify=False)
+rawtoken = s.get('https://vwp-dev.unm.edu/gettoken')
+tokenjson = json.loads(rawtoken.text)
+print tokenjson['preauthurl']
+print tokenjson['preauthtoken']
+                           </pre>
+                            <h4>Response</h4>
+                            <p>Returns a json with two fields.</p>
+                            <p>preauthurl: the url to use for swift uploads</p>
+                            <p>preauthtoken: the authentication token to use for swift uploads</p>
+                            <p>Use these tokens to establish a connection to swift as in the following example:</p>
+                            <pre>swift upload [modelid] -S 1073741824 [filename] --os-storage-url=[preauthurl] --os-auth-token=[preauthtoken]</pre>
+                            <p>This will upload a file to a container with the model id of your model run to the url you were passed using the token for authentication.</p>
+                            <p>For a full use case, see documentation for <a href="datasets.html#swiftupload">Dataset Upload (Swift)</a>. </p>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
