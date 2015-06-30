@@ -109,16 +109,37 @@
                             <p>To identify which OGC services are supported for a given tile index, please refer to the tile index's service response (<a href="#description">Get tile index description</a>).</p>
 
                             <h5>Examples</h5>
+
                             <p><strong>WCS Services</strong></p>
 
 			    <p>The following URL specifies a particular layer name (&COVERAGE), specifies the projection (UTM Zone 11) in which BBOX coordinates are specified (&CRS), and the response projection (&RESPONSE_CRS), and returns a netCDF file (&FORMAT)</p>
-			    <p>http://129.24.63.85/apps/vwp/datasets/4e61e29b-e373-4989-923d-200748bd9a2d/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=569027.125,4842177.25,569452.125,4842547.25&CRS=epsg:26911&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf</p>
-			    <br>
+			    <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=569027.125,4842177.25,569452.125,4842547.25&CRS=epsg:26911&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=569027.125,4842177.25,569452.125,4842547.25&CRS=epsg:26911&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf</a>
+			    <br><br>
 			    <p>The following URL specifies a particular layer name (&COVERAGE), specifies the projection (Lat-Long NAD83) in which BBOX coordinates are specified (&CRS), and the response projection (&RESPONSE_CRS), and returns a netCDF file (&FORMAT)</p>
-			    <p>http://129.24.63.85/apps/vwp/datasets/4e61e29b-e373-4989-923d-200748bd9a2d/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf</p>
-			    <br>
+			    <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf</a>
+			    <br><br>
 			    <p>The following URL specifies a particular layer name (&COVERAGE), specifies the projection in which BBOX coordinates are specified (&CRS), and the response projection (&RESPONSE_CRS), returns a netCDF file (&FORMAT), and which layer bands should be returned (&BANDS=1,2,3).</p>
-			    <p>http://129.24.63.85/apps/vwp/datasets/4e61e29b-e373-4989-923d-200748bd9a2d/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:4326&WIDTH=170&HEIGHT=148&Format=netcdf&BANDS=1,2,3</p>
+			    <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:4326&WIDTH=170&HEIGHT=148&Format=netcdf&BANDS=1,2,3'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:4326&WIDTH=170&HEIGHT=148&Format=netcdf&BANDS=1,2,3</a>
+			    <br><br>
+                            <p><strong>WMS Services</strong></p>
+
+
+                            <p>The following URL specifies a particular layer name (&LAYERS), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, and returns a PNG file (&FORMAT).</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG</a>
+                            <br><br>
+                            <p>The following URL specifies a particular layer name (&LAYERS), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, returns a PNG file (&FORMAT), and specifies a single layer band should be returned (&BANDS=2).</p>
+
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG&Bands=1,2,3'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG&Bands=1,2,3</a>
+                            <br><br>
+                            <p>The following URL specifies a particular layer name (&LAYERS), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, returns a PNG file (&FORMAT), and specifies multiple layer bands should be returned (&BANDS=1,2,3)</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG&Bands=1,2,3'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG&Bands=1,2,3</a>
+			    <br><br>
+
+
+
+                            <p><strong>WFS Services</strong></p>
+			    <p>Coming Soon!</p
+
 
 
                             <h4>Response</h4>
