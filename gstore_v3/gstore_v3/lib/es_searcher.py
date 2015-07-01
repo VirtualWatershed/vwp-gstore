@@ -58,7 +58,7 @@ class EsSearcher():
         return '<EsSearcher (%s)>' % (self.es_url)
 
     def get_query(self):
-	print "\nsearcher.get_query() function called...."
+	#print "\nsearcher.get_query() function called...."
         """return the search filters 
 
         Notes:
@@ -106,7 +106,7 @@ class EsSearcher():
         return [(i['_id'], i['_type']) for i in self.results['hits']['hits']]
 
     def search(self):
-	print "\nes_searcher.search() function called...."
+	#print "\nes_searcher.search() function called...."
         """execute the es request
 
         Notes:
@@ -119,23 +119,23 @@ class EsSearcher():
         Raises:
             Exception: returns the es error if the status code isn't 200
         """
-	print "Again, the value of self.query_data: %s" % self.query_data
+	#print "Again, the value of self.query_data: %s" % self.query_data
         #print self.query_data
         #print self.es_url 
         #print self.query_data
         testdata=json.dumps(self.query_data)
-        print "test data %s" % testdata
-        print "Now we Post the request using json.dumps of self.query_data"
+        #print "test data %s" % testdata
+        #print "Now we Post the request using json.dumps of self.query_data"
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
-	print "results.text"
-        print results.text
+	#print "results.text"
+        #print results.text
         if results.status_code != 200:
             self.results = {}
             raise Exception(results.text)
 
         self.results = results.json()
-	print "print self.results and now returning them to ??()"
-    	print self.results        
+	#print "print self.results and now returning them to ??()"
+    	#print self.results        
         return self.results
 
     def parse_basic_query(self, app, query_params, exclude_fields=[], available_uuids=[]):
@@ -157,19 +157,19 @@ class EsSearcher():
         limit = int(query_params['limit']) if 'limit' in query_params else self.default_limit
         offset = int(query_params['offset']) if 'offset' in query_params else self.default_offset
 
-	print "\nparse_basic_query() function called from es_searcher.py"
-        print "limit: %s" % limit
-        print "offset: %s" % offset
+	#print "\nparse_basic_query() function called from es_searcher.py"
+        #print "limit: %s" % limit
+        #print "offset: %s" % offset
 
         #category
         theme, subtheme, groupname = self.extract_category(query_params)
 
-        print "theme: %s, subtheme: %s, groupname: %s" % (theme,subtheme, groupname)
+        #print "theme: %s, subtheme: %s, groupname: %s" % (theme,subtheme, groupname)
 
         #keywords
         keyword = query_params.get('query', '').replace('+', '')
 
-        print "keyword: %s" % keyword
+        #print "keyword: %s" % keyword
 
 
         #date added
@@ -178,18 +178,18 @@ class EsSearcher():
         end_added = query_params.get('end_time', '')
         end_added_date = convert_timestamp(end_added)
 
-        print "start_added: %s,  end_added: %s" % (start_added_date,end_added_date)
+        #print "start_added: %s,  end_added: %s" % (start_added_date,end_added_date)
 
         #valid dates
         start_valid = query_params.get('timestamp_start', '')
         start_valid_date = convert_datetimestamp(start_valid)
-        print "start_valid_date: %s" % start_valid_date
+        #print "start_valid_date: %s" % start_valid_date
         empty = ""
 
         #print start_valid_date 2004-10-19 00:00:00
         end_valid = query_params.get('timestamp_end', '')
         end_valid_date = convert_datetimestamp(end_valid)
-        print "end_valid_date: %s\n" % end_valid_date
+        #print "end_valid_date: %s\n" % end_valid_date
 
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
@@ -217,12 +217,12 @@ class EsSearcher():
         taxonomy = query_params.get('taxonomy', '')
         geomtype = query_params.get('geomtype', '').replace('+', ' ')
         service = query_params.get('service', '')
-
+        duuid =  query_params.get('uuid', '')
         #spatial search
         box = query_params.get('box', '')
         epsg = query_params.get('epsg', '')
 
-	print "Query params: %s" % query_params
+	#print "Query params: %s" % query_params
 
         #sorting
         sort = query_params.get('sort', 'lastupdate')
@@ -248,8 +248,8 @@ class EsSearcher():
 
         #build the json data
         query_request = {"size": limit, "from": offset, "fields": self.default_fields}
-        print "Begin building the Query request..."
-        print "query_request: %s" % query_request
+        #print "Begin building the Query request..."
+        #print "query_request: %s" % query_request
 
         # the main query block
         filtered = {}
@@ -289,7 +289,10 @@ class EsSearcher():
             ands.append({"query": {"term": {"model_set_type": model_set_type.lower()}}})
         if model_set_taxonomy:
             ands.append({"query": {"term": {"model_set_taxonomy": model_set_taxonomy.lower()}}})
-   
+#hb
+        if duuid:
+            ands.append({"query": {"term": {"_id": duuid.lower()}}})
+
 
             #NOTE: geomtype is not currently in the indexed docs
             if geomtype and geomtype.upper() in ['POLYGON', 'POINT', 'LINESTRING', 'MULTIPOLYGON', '3D POLYGON', '3D LINESTRING']:
@@ -338,7 +341,7 @@ class EsSearcher():
             for item in available_uuids:
                 shoulds.append({ "match" : { "model_run_uuid" : item } })
             ands.append({"query" : {"bool" : {"should" : shoulds} } })
-            print ands
+            #print ands
 
 
         if ands:
@@ -364,12 +367,12 @@ class EsSearcher():
         #and add the sort element back in
         #print query_request
         query_request.update(sorts)
-        print "\nFinal query request"
-        print query_request
+        #print "\nFinal query request"
+        #print query_request
         #should have a nice es search
         self.query_data = query_request
 
-	print "Now printing all self.query_data: %s" % self.query_data
+	#print "Now printing all self.query_data: %s" % self.query_data
 
     '''
     parse helpers
