@@ -536,11 +536,17 @@ def add_swiftdata(request):
     # swift download <container> <object> --os-storage-url=<preauthurl> --os-auth-token=<preauthtoken>
     modelid = request.params['modelid'].decode('utf-8') # container name should be the model uuid
     filename = request.params['filename'] # object will be the name of the manifest we want to download
+    pair = os.path.split(filename)
+    print pair
+    basefile = pair[1]
+    path = pair[0]
+    if basefile is '':
+        return HTTPUnprocessableEntity("Improper format for filename %s" % filename)
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]
     parent_dir = os.path.join(geodatapath, first_two_of_uuid)
     sub_dir = os.path.join(parent_dir, modelid)
-    file_path = os.path.join(parent_dir, modelid, filename)
+    file_path = os.path.join(parent_dir, modelid, basefile)
     full_model_query=DBSession.query(Modelruns.model_run_id,Modelruns.userid).filter((Modelruns.model_run_id==modelid) & (Modelruns.userid==userid)).first()
     userid_query=DBSession.query(Modelruns.userid).filter(Modelruns.userid==userid).first()
     uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==modelid).first()
@@ -565,10 +571,14 @@ def add_swiftdata(request):
     if not preauthtoken:
         return HTTPBadRequest('No Swift Pre-Authorization Token provided')
 
+    print modelid
+    print path
+    container = modelid if path == '' else os.path.join(modelid, path)
+    print container
     command = ['swift']
     command.append('download')
-    command.append(modelid)
-    command.append(filename)
+    command.append(container)
+    command.append(basefile)
     command.append('--os-storage-url='+preauthurl)
     command.append('--os-auth-token='+preauthtoken)
     command.append('--output')
@@ -852,8 +862,8 @@ def add_dataset(request):
         for f in files:
             print f
             #check if the file in the datasets is there.
-            if not os.path.isfile(f):
-                 return HTTPBadRequest('File Not Found: Did you upload this file?')
+            if not external and not os.path.isfile(f):
+                return HTTPBadRequest('File Not Found: Did you upload this file?')
             sf = SourceFile(f)
             s.src_files.append(sf)
 
