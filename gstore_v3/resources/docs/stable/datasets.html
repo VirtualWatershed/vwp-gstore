@@ -810,43 +810,247 @@ else:
                             <h4>Request Parameters</h4>
                             <p>None.</p>
                             <h5>Route Parameters</h5>
-                            <p>{app}</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Put Parameters</h5>
-                            <p>formats: The file formats that are intended to be downloaded, a list of strings.</p>
-                            <p>description: Description of the dataset, string</p>
-                            <p>sources: A dictionary detailing file information utilizing the following parameters:</p>
-                            <p>&emsp;mimetype: Internet Media Type of transmitted data</p>
-                            <p>&emsp;files: List of full paths to the uploaded file on the Virtual Watershed</p>
-                            <p>&emsp;set: Should always be 'original'</p>
-                            <p>&emsp;external: true or false, if file being inserted is located on another system</p>
-                            <p>&emsp;extension: extension of original file</p>
-                            <p>taxonomy: file/vector/geoimage/table/service/netcdf_[model]</p>
-                            <p>basename: the name that will be used for all download paths when building URLs</p>
-                            <p>parent_model_run_uuid: The parent model run uuid for this model run set</p>
-                            <p>apps: application alias, should always be vwp for purposes of vwp project</p>
-                            <p>model_set_taxonomy: Defines the taxonomy of data to search for within a model set (grid, vector, file)</p>
-                            <p>model_run_uuid: The model run uuid that is specific to all model sets</p>
-                            <p>records: The number of records in this dataset; should equal the records number in spacial information</p>
-                            <p>model_set: Defines the set of data to assign this data to</p>
-                            <p>spatial: Spatial information regarding the dataset</p>
-                            <p>&emsp;geomtype: Geometry type, can be any valid OGR geometry type</p>
-                            <p>&emsp;records: Number of records associated to features (usually same as number of features)</p>
-                            <p>&emsp;features: Number of features represented by this dataset; usually 1 for rasters and many for vectors</p>
-                            <p>&emsp;bbox: Bounding box coordinates as a comma-delimited list</p>
-                            <p>&emsp;epsg: EPSG code of the provided BOX geometry</p>
-                            <p>services: List of services that are requested to be supported (wms, wcs, wfs)</p>
-                            <p>model_set_type: Defines the type of data within the model set</p>
-                            <p>standards: GIS Metadata Standards to support</p>
-                            <p>active: True or False, whether this dataset is visible by other users to start</p>
-                            <p>model_vars: Comma delimited string of variables represented by inputs and outputs</p>
-                            <p>categories: A triplet enforced by our database as a means of dividing data in to categories and subcategories</p>
-                            <p>&emsp;modelname: Top level category, name of model type being run</p>
-                            <p>&emsp;state: Mid level category, name of the state that the model was run in</p>
-                            <p>&emsp;location: Bottom level category, name of the watershed that hte model was run in</p>
-                            <p>metadata: Attached metadata for this file</p>
-                            <p>&emsp;xml: Original Metadata XML</p>
-                            <p>&emsp;standard: Standard that this metadata is in (should be in supported metadata list)</p>
-                            <p>&emsp;upgrade: Whether to upgrade metadata to gstore</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>formats</td>
+                                        <td>The file formats that are intended to be offered as downloads</td>
+                                        <td>list of strings</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>description</td>
+                                        <td>Description of this dataset</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>sources</td>
+                                        <td>Dictionary detailing file information</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>mimetype</td>
+                                        <td>Internet Media Type of transmitted data</td>
+                                        <td>string</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>files</td>
+                                        <td>List of full paths to the uploaded file on the Virtual Watershed</td>
+                                        <td>list of strings</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>set</td>
+                                        <td>'original' or 'derived', should be 'original for purposes of insert</td>
+                                        <td>string</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>external</td>
+                                        <td>If file whose associated data is located on another server</td>
+                                        <td>string</td>
+                                        <td>true, false(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>extension</td>
+                                        <td>extension of original file</td>
+                                        <td>string</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>taxonomy</td>
+                                        <td>Taxonomy of data for purposes of processing</td>
+                                        <td>string</td>
+                                        <td>file, vector, geoimage, table, service, netcdf_[model]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>basename</td>
+                                        <td>Name used for all download paths when building URLs</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>parent_model_run_uuid</td>
+                                        <td>Parent Model Run UUID for this model run</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>apps</td>
+                                        <td>Application alia</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_set_taxonomy</td>
+                                        <td>Defines the taxonomy of data for searches within a model set</td>
+                                        <td>string</td>
+                                        <td>grid, vector, file</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_run_uuid</td>
+                                        <td>Model Run UUID specific to all datasets in this model run</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>records</td>
+                                        <td>Number of records in this dataset; should equal records number in spacial information</td>
+                                        <td>integer</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_set</td>
+                                        <td>Defines the set of data to assign this data to</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>spatial</td>
+                                        <td>Dictionary of spatial information regarding the dataset</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>geomtype</td>
+                                        <td>Geometry type</td>
+                                        <td>string</td>
+                                        <td>valid OGR geometry type (attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>records</td>
+                                        <td>Number of records associated to features (usually same as number of features</td>
+                                        <td>int</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>features</td>
+                                        <td>Number of features represented by this dataset, usually 1 for rasters and many for vectors</td>
+                                        <td>int</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>bbox</td>
+                                        <td>Bounding box coordinates as a comma-delimited list</td>
+                                        <td>string</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>epsg</td>
+                                        <td>EPSG code of the provided BOX geometry</td>
+                                        <td>int</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>services</td>
+                                        <td>List of services that are requested to be supported</td>
+                                        <td>sring</td>
+                                        <td>wms, wcd, wfs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_set_type</td>
+                                        <td>Defines type of data within the model set</td>
+                                        <td>sring</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>standards</td>
+                                        <td>GIS metadata standards to support</td>
+                                        <td>list of strings</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>active</td>
+                                        <td>Whether this dataset is visible to users to start</td>
+                                        <td>string</td>
+                                        <td>true, false</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_vars</td>
+                                        <td>Comma delimited string of variables represented by inputs and outputs</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>categories</td>
+                                        <td>A triplet enforced by our database as a means of dividing data in to categories and subcategories</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>modelname</td>
+                                        <td>Top level category, name of model type being run</td>
+                                        <td>string</td>
+                                        <td>(attribute of categories)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>state</td>
+                                        <td>Mid level category, name of the state that the model was run in</td>
+                                        <td>string</td>
+                                        <td>(attribute of categories)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>location</td>
+                                        <td>Bottom level category, name of the watershed that hte model was run in</td>
+                                        <td>string</td>
+                                        <td>(attribute of categories)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>metadata</td>
+                                        <td>Attached metadata for this file</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>xml</td>
+                                        <td>Original Metadata XML</td>
+                                        <td>string</td>
+                                        <td>(attribute of metadata)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>standard</td>
+                                        <td>Standard that this metadata is in (should be in supported metadata list)</td>
+                                        <td>string</td>
+                                        <td>(attribute of metadata)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>upgrade</td>
+                                        <td>Whether to upgrade metadata to gstore</td>
+                                        <td>string</td>
+                                        <td>true, false(attribute of metadata)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Examples:</h5>
                             <pre></pre>
                             <h4>Response</h4>
@@ -870,8 +1074,30 @@ else:
                             <h4>Request Parameters</h4>
                             <p>None.</p>
                             <h5>Route Parameters</h5>
-                            <p>{app}</p>
-                            <p>{dataset_uuid}</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Put Parameters</h5>
                             <p>See <a href="stable/datasets.html#datasetupload">Dataset Information Upload</a> </p>
                             <h5>Examples:</h5>
@@ -911,19 +1137,103 @@ else:
                             <h4>Request Parameters</h4>
                             <p>None.</p>
                             <h5>Route Parameters</h5>
-                            <p>{app}</p>
-                            <p>{dataset_uuid}</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>rgis, epscor, elseweb</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Put Parameters</h5>
-                            <p>dataset: The uuid of the datasat .</p>
-                            <p>fields: A list of dictionaries, each with the following form: </p>
-                            <p>&emsp;name: Name pulled the layer field definition</p>
-                            <p>&emsp;description: Description of this layer</p>
-                            <p>&emsp;orig_name:  Name pulled the layer field definition</p>
-                            <p>&emsp;ogr_type: OGR Data type from the layer field definition</p>
-                            <p>&emsp;nodata: Value used to represent no data</p>
-                            <p>&emsp;ogr_precision: Precision of data from the layer field definition</p>
-                            <p>&emsp;ogr_width: Width of data from the layer field definition</p>
-                            <p>&emsp;ogr_justify: Justify from the layer field definition</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>dataset</td>
+                                        <td>The UUID of the dataset</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>fields</td>
+                                        <td>List of dictionaries representing attribute</td>
+                                        <td>list of dictionaries</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>name</td>
+                                        <td>Name pulled the layer field definition</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>description</td>
+                                        <td>Description of this layer</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>orig_name</td>
+                                        <td>Name pulled the layer field definition</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_type</td>
+                                        <td>OGR Data type from the layer field definition</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>nodata</td>
+                                        <td>Value used to represent no data</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_precision</td>
+                                        <td>Precision of data from the layer field definition</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_width</td>
+                                        <td>Width of data from the layer field definition</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_justify</td>
+                                        <td>Justify from the layer field definition</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Examples:</h5>
                             <pre></pre>
                             <h4>Response</h4>
@@ -950,11 +1260,55 @@ else:
                             <h4>Request Parameters</h4>
                             <p>None.</p>
                             <h5>Route Parameters</h5>
-                            <p>{app}</p>
-                            <p>{dataset_uuid}</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Put Parameters</h5>
-                            <p>gid: The feature id of the geometry/feature.</p>
-                            <p>geom: Well-Known Binary representation of geometry from the feature, encoded to a hex string</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>gid</td>
+                                        <td>The feature id of the geometry/feature.</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>geom</td>
+                                        <td>Well-Known Binary representation of geometry from the feature, encoded to a hex string</td>
+                                        <td>hex string</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Examples:</h5>
                             <pre></pre>
                             <h4>Response</h4>
@@ -995,19 +1349,103 @@ else:
                             <h4>Request Parameters</h4>
                             <p>None.</p>
                             <h5>Route Parameters</h5>
-                            <p>{app}</p>
-                            <p>{dataset_uuid}</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Put Parameters</h5>
-                            <p>fids: List of feature ids.</p>
-                            <p>records: A list of features, each with the following form: </p>
-                            <p>&emsp;fid: Feature id of this attribute feature</p>
-                            <p>&emsp;uuid: UUID of associated geometry</p>
-                            <p>&emsp;observed: Datetime observed</p>
-                            <p>&emsp;atts: A list of attributes, each with the following form: </p>
-                            <p>&emsp;&emsp;name: Name of this attribute feature</p>
-                            <p>&emsp;&emsp;u: UUID of this attribute feature</p>
-                            <p>&emsp;&emsp;val: Value of this attribute feature</p>
-                            <p>&emsp;&emsp;qual: (optional)</p>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>fids</td>
+                                        <td>List of feature IDs</td>
+                                        <td>list of string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>records</td>
+                                        <td>A list of features</td>
+                                        <td>list of dictionaries</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>fid</td>
+                                        <td>Feature id of this attribute feature</td>
+                                        <td>string</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>uuid</td>
+                                        <td>UUID of associated geometry</td>
+                                        <td>uuid</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>observed</td>
+                                        <td>Datetime observed</td>
+                                        <td>datetime</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>atts</td>
+                                        <td>List of attributes</td>
+                                        <td>list of dictionaries</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>name</td>
+                                        <td>Name of this attribute feature</td>
+                                        <td>string</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>u</td>
+                                        <td>UUID of this attribute feature</td>
+                                        <td>uuid</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>val</td>
+                                        <td>Value of this attribute feature</td>
+                                        <td>(varies)</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>qual</td>
+                                        <td>(optional)</td>
+                                        <td>(varies)</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                             <h5>Examples:</h5>
                             <pre></pre>
                             <h4>Response</h4>
