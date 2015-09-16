@@ -153,29 +153,29 @@ def getType(geomtype):
         return mapscript.MS_LAYER_POINT
 
 def getNetCDFTaxonomies():
-    return ['netcdf_isnobal']
+    return ['netcdf_isnobal', 'netcdf']
 
-def getNetCDFBandsDesc(taxonomy):
-    if taxonomy == 'netcdf_isnobal':
-        return "ISNoBal Timesteps 1-"
-    return ""
+#def getNetCDFBandsDesc(taxonomy):
+#    if taxonomy == 'netcdf_isnobal':
+#        return "ISNoBal Timesteps 1-"
+#    return ""
 
-def getNetCDFExcludeLayers(taxonomy):
-    if taxonomy == 'netcdf_isnobal':
-        return ['lon', 'lat', 'mask','alt']
-    return []
+#def getNetCDFExcludeLayers(taxonomy):
+#    if taxonomy == 'netcdf_isnobal':
+#        return ['lon', 'lat', 'mask','alt','u','z']
+#    return []
 
 def getNetCDFLayerProps(taxonomy, layername):
-    if taxonomy == 'netcdf_isnobal':
-        standardname = layername + "#standard_name"
-        description = layername + "#ipw_desc"
-        units = layername + "#units"
+    if taxonomy in getNetCDFTaxonomies():
+        standardname = layername + "_layer_name"
+        description = layername + "_layer_desc"
+        units = layername + "_layer_units"
         return {"standardname":standardname, "description":description, "units":units}
     return {}
         
 
 
-def getLayer(d, src, dataloc, bbox, metadata_description={}):
+def getLayer(d, src, dataloc, bbox, metadata_description={}, global_metadata={}, exclude_layers={}):
     """
 
     get the layer obj by taxonomy (for now)
@@ -198,10 +198,22 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
 
     layer.data = dataloc
 
-    netcdftaxonomies = ['netcdf_isnobal']
+    netcdftaxonomies = getNetCDFTaxonomies()
     if d.taxonomy in netcdftaxonomies:
+        print dataloc
+        nameparts = dataloc.split(':')
+        layerindex = len(nameparts) - 1
+        layersubname = nameparts[layerindex]
+        if layersubname[0:2] == '//':
+            layersubname = layersubname[2:]
+        if layersubname in exclude_layers:
+            return None
+
         subdataset = Open(dataloc,GA_ReadOnly)
+        if subdataset is None:
+            return None
         subdataset_metadata = subdataset.GetMetadata()
+        print subdataset_metadata
 
     layer.setExtent(bbox[0], bbox[1], bbox[2], bbox[3]) 
 
@@ -215,28 +227,39 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
 
     if subdataset_metadata:
         #extract the layer subname
-        nameparts = dataloc.split(':')
-        layerindex = len(nameparts) - 1
-        layersubname = nameparts[layerindex]
-        if layersubname in getNetCDFExcludeLayers(d.taxonomy):
-            return None
+        #nameparts = dataloc.split(':')
+        #layerindex = len(nameparts) - 1
+        #layersubname = nameparts[layerindex]
         param_names = getNetCDFLayerProps(d.taxonomy, layersubname)
-        print param_names
+        #print param_names
         standardname = param_names['standardname']
-        print standardname
+        #print standardname
         description = param_names['description']
-        print description
+        #print description
         units = param_names['units']
-        print units
+        #print units
         #set values from param names
-        layer.name = subdataset_metadata[standardname]
-        layer.metadata.set('layer_title', subdataset_metadata[standardname])
-        layer.metadata.set('wcs_label', subdataset_metadata[standardname])
-        layer.metadata.set('ows_title', subdataset_metadata[description])
-        layer.metadata.set('ows_abstract', subdataset_metadata[description])
-        layer.metadata.set('layer_data_units', subdataset_metadata[units])
+        #print global_metadata
+        keys = global_metadata.keys()
+        
+        if standardname not in keys:
+            print "No " + standardname + " in global metadata!"
+            return None
+        if description not in keys:
+            print "No " + description + " in global metadata!"
+            return None
+        if units not in keys:
+            print "No " + units + " in global metadata!"
+            return None
 
-        layer.metadata.set('annotation_name', '%s: %s' % (subdataset_metadata[standardname], d.dateadded))
+        layer.name = global_metadata[standardname]
+        layer.metadata.set('layer_title', global_metadata[standardname])
+        layer.metadata.set('wcs_label', global_metadata[standardname])
+        layer.metadata.set('ows_title', global_metadata[description])
+        layer.metadata.set('ows_abstract', global_metadata[description])
+        layer.metadata.set('layer_data_units', global_metadata[units])
+
+        layer.metadata.set('annotation_name', '%s: %s' % (global_metadata[standardname], d.dateadded))
         
 
     if metadata_description:
@@ -305,7 +328,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('wcs_rangeset_label', d.description)
         layer.metadata.set('wcs_enable_request', '*')
 
-    elif d.taxonomy == 'netcdf_isnobal':
+    elif d.taxonomy in getNetCDFTaxonomies():
         #TODO: possibly add accurate units based on the epsg code
         #TODO: check on the wcs_formats list & compare to outputformats - ARE THE NAMES CORRECT?
         layer.setProjection('+init=epsg:%s' % (d.orig_epsg))
@@ -343,7 +366,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
             processing_directives = mapsettings.get_processing()
             for directive in processing_directives:
                 layer.setProcessing(directive)
-            nodatataxonomies = ['geoimage','netcdf_isnobal']
+            nodatataxonomies = ['geoimage','netcdf_isnobal', 'netcdf']
             if d.taxonomy in nodatataxonomies and 'WCS-NODATA' in mapsettings.settings:
                 #add the wcs nullvalue flag
                 nodata = mapsettings.settings['WCS-NODATA']
@@ -784,7 +807,7 @@ def datasets(request):
 
         m.web.metadata.set('ows_title', valid_basename)
 
-        if d.taxonomy in ['geoimage', 'netcdf_isnobal']:
+        if d.taxonomy in ['geoimage', 'netcdf_isnobal', 'netcdf']:
             m.web.metadata.set('wcs_onlineresource', '%s/apps/%s/datasets/%s/services/ogc/wcs' % (base_url, app, d.uuid))
             m.web.metadata.set('wcs_label', valid_basename)
             m.web.metadata.set('wcs_name', valid_basename)
@@ -901,8 +924,21 @@ def datasets(request):
         if d.taxonomy in netcdftaxonomies:
             netcdf = Open(srcloc,GA_ReadOnly)
             netcdf_metadata=netcdf.GetMetadata()
-            bandnum = netcdf_metadata['NC_GLOBAL#nsteps']
-            banddesc = getNetCDFBandsDesc(d.taxonomy) + str(bandnum)
+            global_keys = netcdf_metadata.keys()
+            if 'bands_name' not in global_keys:
+                return HTTPNotFound('Improperly formatted VWP NetCDF - needs bands_name field in metadata!')
+            bands_name = netcdf_metadata['bands_name']
+            if bands_name not in global_keys:
+                return HTTPNotFound('Improperly formatted VWP NetCDF - ' + bands_name + ' not found in metadata!')
+            bandnum = netcdf_metadata[bands_name]
+            #banddesc = getNetCDFBandsDesc(d.taxonomy) + str(bandnum)
+            if 'bands_desc' not in global_keys:
+                return HTTPNotFound('Improperly formatted VWP NetCDF - needs bands_desc field in metadata!')
+            banddesc = netcdf_metadata['bands_desc']
+            exclude_layers=[]
+            if 'exclude_layers' in global_keys:
+                exclude_layers = netcdf_metadata['exclude_layers'].split(',')
+            print exclude_layers
             i = 2
             bandsvals = "1"
             while i <= int(bandnum):
@@ -917,7 +953,7 @@ def datasets(request):
                     subdatasetNames.append(sds_name)
 
             for name in subdatasetNames:
-                layer = getLayer(d, mapsrc, name, bbox, metadata_description)
+                layer = getLayer(d, mapsrc, name, bbox, metadata_description, netcdf_metadata, exclude_layers)
                 #do more things to the layer?
                 if layer:
                     layer.metadata.set('wcs_bands_description', banddesc)
