@@ -730,7 +730,7 @@ def add_attributes(request):
     records = post_data['records'] if 'records' in post_data else []
 
     if not records:
-        return HTTPServerError()
+        return HTTPServerError("records not in postdata")
 
     #just get the dataset info once
     dataset_id = the_dataset.id
