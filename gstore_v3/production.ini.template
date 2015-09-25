@@ -45,7 +45,7 @@ mako.directories = my_app:templates
 
 SRID = 4326
 
-DEFAULT_FORMATS = zip,shp,kml,csv,xls,json,rss,gml,tif,sid,ecw,dem,hdf,ascii,nc,grib,txt,html,pdf,doc,docx,xlsx,gz,png,gif,jpg,img,geojson
+DEFAULT_FORMATS = zip,shp,kml,csv,xls,json,rss,gml,tif,sid,ecw,dem,hdf,ascii,nc,grib,txt,html,pdf,doc,docx,xlsx,gz,png,gif,jpg,img,geojson,control
 
 DEFAULT_SERVICES = wms,wcs,wfs
 

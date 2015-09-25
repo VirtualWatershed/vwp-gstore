@@ -185,6 +185,7 @@ class Dataset(Base):
             return None
         lst = lst.split(',')
         
+        print self.excluded_formats
         exc_lst = self.excluded_formats
 
         #get all from one not in the other
@@ -428,7 +429,7 @@ class Dataset(Base):
             #TODO: change the relate to only include active sources
             srcs = [s for s in self.sources if s.active]
 
-            if self.taxonomy in ['geoimage', 'netcdf_isnobal']:
+            if self.taxonomy in ['geoimage', 'netcdf_isnobal', 'netcdf']:
                 #add the downloads by source
                 #TODO: maybe compare to the formats list?
                 dlds = [(s.set, s.extension) for s in srcs] # if not s.is_external]
@@ -449,7 +450,7 @@ class Dataset(Base):
                 for f in fmts:
                     sf = [s for s in srcs if s.extension == f]
                     if not sf:
-                        #if it's not in there, that's a whole other problem (i.e. why is it listed in the first place?)
+			print f                        #if it's not in there, that's a whole other problem (i.e. why is it listed in the first place?)
                         continue
                     sf = sf[0]
                     dlds.append((sf.set, f))
