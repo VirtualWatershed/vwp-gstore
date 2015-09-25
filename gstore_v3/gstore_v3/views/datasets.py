@@ -97,7 +97,7 @@ def dataset(request):
         return HTTPBadRequest()
 
     if format not in d.get_formats(request):
-        return HTTPNotFound()    
+        return HTTPNotFound('Could not find format ' + format)    
 
     #so now we have the dataset
     #let's get the source for the set + extension combo
