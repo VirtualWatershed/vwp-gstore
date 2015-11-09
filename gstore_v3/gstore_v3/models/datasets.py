@@ -327,7 +327,7 @@ class Dataset(Base):
         """
         if self.taxonomy in ['file', 'table', 'service']:
             return None, None
-        elif self.taxonomy in ['geoimage', 'netcdf_isnobal']:
+        elif self.taxonomy in ['geoimage', 'netcdf_isnobal', 'netcdf']:
             print "geoimage found"
             srcs = self.sources
             src = None
