@@ -106,7 +106,7 @@ all the routing
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    authn_policy = AuthTktAuthenticationPolicy('EDACsecret', callback=groupfinder, hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
+    authn_policy = AuthTktAuthenticationPolicy(settings['tokengen'], callback=groupfinder, hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
     authz_policy = ACLAuthorizationPolicy()
     config = Configurator(root_factory=RootFactory,authentication_policy=authn_policy,authorization_policy=authz_policy,settings=settings)    
     config.include('pyramid_chameleon')
@@ -128,6 +128,12 @@ def main(global_config, **settings):
     config.add_static_view(name='developer', path='gstore_v3:../resources/devdocs', permission='developers')
 
     config.add_route('home', '/')    
+
+#utility routes
+#code found at https://gist.github.com/mitchellrj/3721859
+    config.add_route('options', '/*path', request_method='OPTIONS')
+    config.add_route('trace', '/*path', request_method='TRACE')
+
 
 #auth routes
     config.add_route('private', '/private')

@@ -485,6 +485,7 @@ def gettoken(request):
 
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
+    print "Add Data Called"
     userid = authenticated_userid(request)
     filename = request.POST['file'].filename
     print filename
@@ -497,6 +498,7 @@ def add_data(request):
     uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==modelid).first()
 
     if(full_model_query==None):
+        print "unprocessable entity"
         if(userid_query==None):
             return HTTPUnprocessableEntity("The userid is not associated with any model runs")
         else:
@@ -512,6 +514,7 @@ def add_data(request):
     file_path = os.path.join(parent_dir, modelid, filename)
     #This should also check the DB to see if the model run exists, but I don't have the time right now.	
     if not os.path.isdir(sub_dir):
+        print "bad request"
         return HTTPBadRequest('Model RUN UUID Not Found')
     temp_file_path = file_path + '~'
     output_file = open(temp_file_path, 'wb')
@@ -523,7 +526,11 @@ def add_data(request):
         output_file.write(data)
     output_file.close()
     os.rename(temp_file_path, file_path)
-    return Response('OK')
+    response = Response('OK')
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:5000'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    print response
+    return response
 
 
 '''
@@ -918,7 +925,10 @@ def add_dataset(request):
     DBSession.close()
  
     #and just for kicks, return the uuid
-    return Response(dataset_uuid)
+    response = Response(dataset_uuid)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    return response
 
 @view_config(route_name='update_dataset', request_method='PUT')
 def update_dataset(request):
