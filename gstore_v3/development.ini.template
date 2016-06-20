@@ -34,10 +34,22 @@ mongo_inactive_collection = inactives
 #NOTE: this is not (and should not) be the same db as the main datastore
 dataone.url = postgresql://my_user:my_password@my_host:my_port/my_dataone_database
 
+#swift
+swift_tenant = my_tenant
+swift_username = my_username
+swift_password = my_password
+swift_auth = https://my_auth
+
+
 #readwrite elasticsearch
 es_root = http://my_host:my_port/
 es_dataset_index = my_index
 es_user = my_user:my_password
+es_dbuser = my_user
+es_dbpass = my_password
+
+#token generation
+tokengen = my_tokengen
 
 #needed to use any mako templates (mapper, etc)
 #NOTE: update the my_app to the name of the wsgi app
@@ -62,6 +74,7 @@ OGC_SRS = EPSG:4326,EPSG:4269,EPSG:4267,EPSG:26913,EPSG:26912,EPSG:26914,EPSG:26
 #NOTE: do not use a hard-coded base url (will affect new apps from the same svn repository)
 #host url for building metadata links, etc
 BALANCER_URL = http://app_host
+BALANCER_URL_SECURE = https://app_host
 
 #for the mapper
 MEDIA_URL = http://app_host
