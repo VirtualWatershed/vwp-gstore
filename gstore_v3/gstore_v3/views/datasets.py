@@ -94,7 +94,7 @@ def dataset(request):
         return HTTPNotFound('This dataset is embargoed.')     
 
     if app not in d.apps_cache:
-        return HTTPBadRequest()
+        return HTTPBadRequest("App not in app cache")
 
     if format not in d.get_formats(request):
         return HTTPNotFound('Could not find format ' + format)    
@@ -250,7 +250,7 @@ def stream_dataset(request):
     format = request.matchdict['ext']
 
     if format not in ['json', 'geojson', 'csv', 'kml', 'gml']:
-        return HTTPBadRequest()
+        return HTTPBadRequest("Format is no json, geojson, csv, kml or gml")
 
     #TODO: add the parameter searches
     params = normalize_params(request.params)
@@ -262,7 +262,7 @@ def stream_dataset(request):
         return HTTPNotFound()
 
     if d.taxonomy not in ['vector', 'table'] or d.inactive or app not in d.apps_cache or d.is_embargoed:
-        return HTTPBadRequest()
+        return HTTPBadRequest("taxonomy issue 001")
 
     if not d.is_available:
         return HTTPServiceUnavailable()
@@ -305,7 +305,7 @@ def stream_dataset(request):
     elif format == 'csv':
         streamer = CsvStreamer(fields)
     else:
-        return HTTPBadRequest()
+        return HTTPBadRequest("stream type not available")
         
                 
     response = Response()
@@ -538,6 +538,7 @@ add swift dataset
 '''
 @view_config(route_name='swift_data', request_method='GET', permission='add_dataset')
 def add_swiftdata(request):
+    print "Swift Data called!"
     userid = authenticated_userid(request)
     # command line format
     # swift download <container> <object> --os-storage-url=<preauthurl> --os-auth-token=<preauthtoken>
@@ -591,8 +592,13 @@ def add_swiftdata(request):
     command.append('--output')
     command.append(file_path)
 
+
     try:
-        subprocess.check_call(command)
+        print command
+        output = subprocess.check_output(command)
+        print output
+        if "Bad URL" in output:
+          return HTTPBadRequest('A bad URL was returned by the swift process; make sure your url path is properly formatted.')
     except subprocess.CalledProcessError:
         return HTTPBadRequest('Unable to download file from swift server; was it properly uploaded?')
 
@@ -682,22 +688,35 @@ def add_dataset(request):
     #outside uuids for data replication (nv/id data as local dataset with pointer to their files)
 
     #TODO: finish the settings insert (class & style)
-
+    print request
     #get the data as json
     post_data = request.json_body
-    #print post_data
+
+    print "AA" 
+   #print post_data
     SRID = int(request.registry.settings['SRID'])
+    print "BA"
     excluded_formats = get_all_formats(request)
+    print "AC"
     excluded_services = get_all_services(request)
+    print "AD"
     excluded_standards = get_all_standards(request)
- 
+    print "AE"
     #do stuff
     description = post_data['description']
+    print "AF"
     basename = post_data['basename']
+    print "AG"
     taxonomy = post_data['taxonomy']
+    if taxonomy not in ['vector', 'geoimage', 'netcdf', 'netcdf_isnobal', 'file', 'table', 'service', 'rtindex', 'vtindex']:
+	return HTTPBadRequest('Invalid value ' + taxonomy + ' for taxonomy key in JSON. Value must be vector, geoimage, netcdf, netcdf_isnobal, file, table, service, rtindex, or vtindex')    
+
     model_run_uuid = post_data['model_run_uuid']
+    print "AI"
 #   Get the model name from uuid
+
     model_description = DBSession.query(Modelruns).filter(Modelruns.model_run_id==model_run_uuid).first()
+    print "AJ"
     model_run_name = model_description.description
     print model_run_name
     model_vars = post_data['model_vars']
@@ -794,7 +813,7 @@ def add_dataset(request):
         if not c:
             #we'll need to add a new category BEFORE running this (?)
             return HTTPBadRequest('Missing category triplet')
-
+            print "Invalid Category triplet! - THEME:" + theme + ", SUBTHEME:" + subtheme + ", GROUPNAME:" + groupname
         new_dataset.categories.append(c)
 
     if validdates:
@@ -839,16 +858,18 @@ def add_dataset(request):
             valid = validate_xml(original_xml)
             if 'error' in valid.lower():
                 return HTTPBadRequest('Invalid GSTORE metadata')
-
+                print "Bad Metadata"
+                print original_xml
             g = DatasetMetadata()
             g.gstore_xml = original_xml
             new_dataset.gstore_metadata.append(g)
             
         else:
             return HTTPBadRequest('Bad metadata definition')
+            print "Bad metadata definition" 
     else:
         return HTTPBadRequest('No metadata')
-        
+        print "Missing metadata"
            
     #add the sources to sources
         #add the source_files to the source
@@ -871,6 +892,7 @@ def add_dataset(request):
             #check if the file in the datasets is there.
             if not external and not os.path.isfile(f):
                 return HTTPBadRequest('File Not Found: Did you upload this file?')
+                print 'File Not Found: Did you upload this file?'
             sf = SourceFile(f)
             s.src_files.append(sf)
 
@@ -981,7 +1003,7 @@ def update_dataset(request):
         if key == 'metadata':
             xml = post_data[key]
             if not xml:
-                return HTTPBadRequest()
+                return HTTPBadRequest("No XML found in metadata key")
             #replace the original_metadata.xml with the metadata included here
             if not d.original_metadata:
                 #we need to make one
@@ -1023,7 +1045,7 @@ def update_dataset(request):
         
             active = post_data[key]
             if not active:
-                return HTTPBadRequest()
+                return HTTPBadRequest("Not active 002")
             inactive = True if active.lower() == 'false' else False
             d.inactive = inactive
 
@@ -1052,7 +1074,7 @@ def update_dataset(request):
             #TODO: add es updater for flag in index doc
             available = post_data[key]
             if not available:
-                return HTTPBadRequest()
+                return HTTPBadRequest("Not available")
             available = True if available == 'True' else False
             d.is_available = available
 
@@ -1061,7 +1083,7 @@ def update_dataset(request):
             #TODO: add es updater for flag in index doc
             embargo = post_data[key]
             if not embargo:
-                return HTTPBadRequest()
+                return HTTPBadRequest("not embargoed")
 
             is_embargoed = embargo['embargoed']
             embargo_date = embargo['release_date'] if 'release_date' in embargo else ''     
@@ -1094,7 +1116,7 @@ def update_dataset(request):
         elif key == 'bbox':
             parts = post_data[key]
             if 'geom' not in parts and 'box' not in parts:
-                return HTTPBadRequest()
+                return HTTPBadRequest("geom not in parts")
 
             SRID = int(request.registry.settings['SRID'])
             box = parts['box'] if 'box' in parts else ''
@@ -1104,7 +1126,7 @@ def update_dataset(request):
                 box = map(float, box.split(','))
                 geom = bbox_to_wkb(box, SRID)
             else:
-                return HTTPBadRequest()
+                return HTTPBadRequest("box geom issue")
 
             d.box = box
             d.geom = geom
@@ -1301,7 +1323,7 @@ def update_dataset_index(request):
     param_keys = params['elements'].split(',') if 'elements' in params else []
 
     if not param_keys:
-        return HTTPBadRequest()
+        return HTTPBadRequest("no param keys")
 
     es_description = {
         "host": request.registry.settings['es_root'],
