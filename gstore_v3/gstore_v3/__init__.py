@@ -138,6 +138,9 @@ def main(global_config, **settings):
 #auth routes
     config.add_route('private', '/private')
     config.add_route('createuser', '/createuser')
+    config.add_route('createexternaluser', '/createexternaluser', request_method='POST')
+    config.add_route('showexternalusers', '/showexternalusers')
+    config.add_route('tieaccount2app', '/createexternalapp', request_method='POST')
     config.add_route('login', '/login')
     config.add_route('apilogin', '/apilogin')
     config.add_route('logout', '/logout')
