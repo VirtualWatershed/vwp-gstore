@@ -96,7 +96,7 @@
                                         <div><span class="schema-object">type</span> (<span class="schema-datatype">string</span>): object type</div>
                                         <div><span class="schema-object">taxonomy</span> (<span class="schema-datatype">string</span>): dataset type (geoimage or vector or file or table)</div>
                                         <p class="bg-callouts bg-warning">"geoimage" refers to a raster dataset.</p>
-                                        <div><span class="schema-object">categories</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">categories</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">theme</span> (<span class="schema-datatype">string</span>): theme (root)</div>
                                                 <div><span class="schema-object">subtheme</span> (<span class="schema-datatype">string</span>): subtheme (level 1)</div>
@@ -104,48 +104,48 @@
                                             </div>
                                         </div>
 
-                                        <div><span class="schema-object">downloads</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">downloads</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{format}</span> (<span class="schema-datatype">string</span>): URL for the zipped download for the format</div>
                                                 <p class="bg-callouts bg-warning">The keys referenced by {format} are the list of supported data formats for this dataset.</p>
                                             </div>
                                         </div>
 
-                                        <div><span class="schema-object">services</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">services</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{service}</span> (<span class="schema-datatype">string</span>): URL for the OGC service GetCapabilities request</div>
                                                 <p class="bg-callouts bg-warning">The keys referenced by {service} are the list of supported OGC services for this dataset (wms, wcs, or wfs).</p>
                                             </div>
                                         </div>
 
-                                        <div><span class="schema-object">metadata</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">metadata</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{standard}</span> (<span class="schema-datatype">dict</span>):
                                                     <div class="schema-nested-object">
                                                         <div><span class="schema-object">{format}</span> (<span class="schema-datatype">string</span>): URL for the documentation for the standard and format specified</div>
-                                                        
+
                                                     </div>
                                                     <p class="bg-callouts bg-warning">The keys referenced by {format} are the list of supported documentation formats for the standard.</p>
                                                     <p class="bg-callouts bg-warning">The keys referenced by {standard} are the list of supported documentation standards for this dataset.</p>
                                                 </div>
                                             </div>
-                                            
-                                            
+
+
                                         </div>
-                                        <div><span class="schema-object">metadata-modified</span> (<span class="schema-datatype">dict</span>): 
+                                        <div><span class="schema-object">metadata-modified</span> (<span class="schema-datatype">dict</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{standard}</span> (<span class="schema-datatype">date</span>): (yyyy-MM-ddTHH:MM:SSZ) date, in UTC, the source documentation was modified </div>
                                                 <p class="bg-callouts bg-warning">The keys referenced by {standard} are the list of supported documentation standards for this dataset. In most cases, this key will be "all" to indicate that the modifications made to the source documentation are reflected in all documentation representations.</p>
                                             </div>
                                         </div>
-                                        <div><span class="schema-object">spatial</span> (<span class="schema-datatype">dict</span>): 
+                                        <div><span class="schema-object">spatial</span> (<span class="schema-datatype">dict</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">epsg</span> (<span class="schema-datatype">integer</span>): EPSG code of the original data source</div>
                                                 <div><span class="schema-object">bbox</span> (<span class="schema-datatype">array[double]</span>): bounding box in WGS84 as minx, miny, maxx, maxy</div>
                                                 <p class="bg-callouts bg-warning">Unless otherwise noted, vector datasets generated by the GSToRE platform are in WGS84 (EPSG:4326). The EPSG code referenced here refers only to the source data (the ZIP format).</p>
                                             </div>
                                         </div>
-                                        <div><span class="schema-object">prov</span> (<span class="schema-datatype">dict</span>): 
+                                        <div><span class="schema-object">prov</span> (<span class="schema-datatype">dict</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">ontology</span> (<span class="schema-datatype">dict</span>):
                                                     <div class="schema-nested-object">
@@ -158,7 +158,7 @@
                                         </div>
                                         <div><span class="schema-object">preview</span> (<span class="schema-datatype">string</span>): URL to the GSToRE-hosted preview request.</div>
                                         <p class="bg-callouts bg-danger">This service will be deprecated shortly.</p>
-                                        
+
                                     </div>
 
                                     <p>Response for a raster dataset:</p>
@@ -266,7 +266,7 @@
                             <p class="example">/apps/<span class="route-highlight">rgis</span>/datasets/<span class="route-highlight">b6b22969-dfa9-41e5-a836-c483b099c8f7</span>/dataset.<span class="route-highlight">kml</span></p>
 
                             <h4>Response</h4>
-                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of 
+                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of
                             the dataset.</p>
                         </div>
                     </li>
@@ -282,7 +282,7 @@
                         <div class="http-options">
                             <p></p>
 
-                            <p>Some datasets are hosted on external sites or, if the format is "html", are external sites. In those instances, 
+                            <p>Some datasets are hosted on external sites or, if the format is "html", are external sites. In those instances,
                             the request redirects you to the external location. The options available through the query parameters are not available for those
                             datasets, nor are any GSToRE-generated documentation files included with the response.
                             </p>
@@ -370,7 +370,7 @@
                             <p class="example">/apps/<span class="route-highlight">rgis</span>/datasets/<span class="route-highlight">0acbf4fd-d2ab-4216-9c48-803418166003</span>/<span class="route-highlight">nmgrossreceipts_jan_jun2011</span>.<span class="route-highlight">derived</span>.<span class="route-highlight">kml</span></p>
 
                             <h4>Response</h4>
-                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of 
+                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of
                             the dataset.</p>
                         </div>
                     </li>
@@ -753,7 +753,8 @@ else:
                             <p>Payload for this method is a formatted JSON with the following required structure: </p>
                             <pre>{
     "formats": [],
-    "description": "$description"
+    "description": "$description",
+    "externaluserid": "$valid_UUID",
     "sources": [
         {
             "mimetype":"$mimetype",
@@ -1788,8 +1789,8 @@ else:
                     </ul>
                 </div>
             </div>
-        
-        
+
+
         </div>
     </div>
     <footer >
@@ -1802,7 +1803,7 @@ else:
             <div class="col-sm-6">
                 <!-- <img src="../images/EDAC-Banner1_2.png"> -->
             </div>
-            
+
         </div>
     </footer>
 
