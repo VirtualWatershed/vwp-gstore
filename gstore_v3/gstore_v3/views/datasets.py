@@ -22,6 +22,17 @@ from ..lib.database import *
 from ..lib.mongo import gMongoUri
 from ..lib.es_indexer import DatasetIndexer
 from ..lib.spatial_streamer import *
+from ..models.users import (
+    Users,
+    )
+from ..models.externalusers import (
+    Externalusers,
+    )
+from ..models.externalapps import (
+    ExternalApps,
+    )
+
+
 
 
 #TODO: add dataset statistics view - min/max per attribute, histogram info, etc
@@ -161,7 +172,6 @@ def dataset(request):
     #return things that shouldn't be zipped (pdfs, etc)
     if format != 'zip' and mimetype != 'application/x-zip-compressed':
         output = src.get_location(format)
-        #print output
         return return_fileresponse(output, mimetype, output.split('/')[-1])
 
     #return the already packed zip (this assumes that everything set to zip is already a zip)
@@ -485,20 +495,15 @@ def gettoken(request):
 
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
-    print "Add Data Called"
     userid = authenticated_userid(request)
     filename = request.POST['file'].filename
-    print filename
     input_file = request.POST['file'].file
-    print input_file
     modelid = request.params['modelid'].decode('utf-8')
-    print modelid
     full_model_query=DBSession.query(Modelruns.model_run_id,Modelruns.userid).filter((Modelruns.model_run_id==modelid) & (Modelruns.userid==userid)).first()
     userid_query=DBSession.query(Modelruns.userid).filter(Modelruns.userid==userid).first()
     uuid_query=DBSession.query(Modelruns.model_run_id).filter(Modelruns.model_run_id==modelid).first()
 
     if(full_model_query==None):
-        print "unprocessable entity"
         if(userid_query==None):
             return HTTPUnprocessableEntity("The userid is not associated with any model runs")
         else:
@@ -506,7 +511,6 @@ def add_data(request):
                 return HTTPUnprocessableEntity("The model run uuid is not located in the list of model runs")
             else:
                 return HTTPUnprocessableEntity("The model run exists, but you are not the owner and cannot add data to it.")
-    #print modelid
     geodatapath = '/geodata/watershed-data'
     first_two_of_uuid = modelid[:2]
     parent_dir = os.path.join(geodatapath, first_two_of_uuid)
@@ -514,7 +518,6 @@ def add_data(request):
     file_path = os.path.join(parent_dir, modelid, filename)
     #This should also check the DB to see if the model run exists, but I don't have the time right now.	
     if not os.path.isdir(sub_dir):
-        print "bad request"
         return HTTPBadRequest('Model RUN UUID Not Found')
     temp_file_path = file_path + '~'
     output_file = open(temp_file_path, 'wb')
@@ -529,7 +532,6 @@ def add_data(request):
     response = Response('OK')
     response.headers['Access-Control-Allow-Origin'] = 'http://localhost:5000'
     response.headers['Access-Control-Allow-Credentials'] = 'true'
-    print response
     return response
 
 
@@ -538,14 +540,12 @@ add swift dataset
 '''
 @view_config(route_name='swift_data', request_method='GET', permission='add_dataset')
 def add_swiftdata(request):
-    print "Swift Data called!"
     userid = authenticated_userid(request)
     # command line format
     # swift download <container> <object> --os-storage-url=<preauthurl> --os-auth-token=<preauthtoken>
     modelid = request.params['modelid'].decode('utf-8') # container name should be the model uuid
     filename = request.params['filename'] # object will be the name of the manifest we want to download
     pair = os.path.split(filename)
-    print pair
     basefile = pair[1]
     path = pair[0]
     if basefile is '':
@@ -579,10 +579,7 @@ def add_swiftdata(request):
     if not preauthtoken:
         return HTTPBadRequest('No Swift Pre-Authorization Token provided')
 
-    print modelid
-    print path
     container = modelid if path == '' else os.path.join(modelid, path)
-    print container
     command = ['swift']
     command.append('download')
     command.append(container)
@@ -594,9 +591,7 @@ def add_swiftdata(request):
 
 
     try:
-        print command
         output = subprocess.check_output(command)
-        print output
         if "Bad URL" in output:
           return HTTPBadRequest('A bad URL was returned by the swift process; make sure your url path is properly formatted.')
     except subprocess.CalledProcessError:
@@ -688,39 +683,46 @@ def add_dataset(request):
     #outside uuids for data replication (nv/id data as local dataset with pointer to their files)
 
     #TODO: finish the settings insert (class & style)
-    print request
     #get the data as json
     post_data = request.json_body
-
-    print "AA" 
-   #print post_data
     SRID = int(request.registry.settings['SRID'])
-    print "BA"
     excluded_formats = get_all_formats(request)
-    print "AC"
     excluded_services = get_all_services(request)
-    print "AD"
     excluded_standards = get_all_standards(request)
-    print "AE"
     #do stuff
     description = post_data['description']
-    print "AF"
     basename = post_data['basename']
-    print "AG"
     taxonomy = post_data['taxonomy']
     if taxonomy not in ['vector', 'geoimage', 'netcdf', 'netcdf_isnobal', 'file', 'table', 'service', 'rtindex', 'vtindex']:
 	return HTTPBadRequest('Invalid value ' + taxonomy + ' for taxonomy key in JSON. Value must be vector, geoimage, netcdf, netcdf_isnobal, file, table, service, rtindex, or vtindex')    
 
     model_run_uuid = post_data['model_run_uuid']
-    print "AI"
-#   Get the model name from uuid
 
+#   Get the model name from uuid
     model_description = DBSession.query(Modelruns).filter(Modelruns.model_run_id==model_run_uuid).first()
-    print "AJ"
     model_run_name = model_description.description
-    print model_run_name
     model_vars = post_data['model_vars']
     parent_model_run_uuid = post_data['parent_model_run_uuid']
+    externaluserid = post_data['externaluserid'] if 'externaluserid' in post_data else 'n/a'
+    externalapp = 'n/a'
+
+    if externaluserid != "n/a":
+     pattern = re.compile("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
+     if pattern.match(externaluserid):
+        usersappid=DBSession.query(Externalusers.appid).filter(Externalusers.uuid==externaluserid).first()
+        if not (usersappid):
+           return HTTPBadRequest("UserID "+externaluserid+" does not exist")
+        userid = authenticated_userid(request)
+        UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
+        externalappinfo = DBSession.query(ExternalApps.appid,ExternalApps.name).filter(ExternalApps.userid==UserIDInt[0]).first()     
+        if externalappinfo[0] != usersappid[0]:
+            return HTTPBadRequest("You do not have permissons to insert as this external user.")
+        else:
+            externalapp=externalappinfo[1]
+     else:
+       return HTTPUnprocessableEntity(externaluserid + " is not a valid UUID")
+
+
     model_set = post_data['model_set']
     model_set_type = post_data['model_set_type']
     model_set_taxonomy = post_data['model_set_taxonomy']
@@ -769,6 +771,8 @@ def add_dataset(request):
     new_dataset.model_run_name = model_run_name
     new_dataset.model_vars = model_vars
     new_dataset.parent_model_run_uuid = parent_model_run_uuid
+    new_dataset.externaluserid = externaluserid
+    new_dataset.externalapp = externalapp
     new_dataset.model_set = model_set
     new_dataset.model_set_type = model_set_type
     new_dataset.model_set_taxonomy = model_set_taxonomy
@@ -813,7 +817,6 @@ def add_dataset(request):
         if not c:
             #we'll need to add a new category BEFORE running this (?)
             return HTTPBadRequest('Missing category triplet')
-            print "Invalid Category triplet! - THEME:" + theme + ", SUBTHEME:" + subtheme + ", GROUPNAME:" + groupname
         new_dataset.categories.append(c)
 
     if validdates:
@@ -858,18 +861,14 @@ def add_dataset(request):
             valid = validate_xml(original_xml)
             if 'error' in valid.lower():
                 return HTTPBadRequest('Invalid GSTORE metadata')
-                print "Bad Metadata"
-                print original_xml
             g = DatasetMetadata()
             g.gstore_xml = original_xml
             new_dataset.gstore_metadata.append(g)
             
         else:
             return HTTPBadRequest('Bad metadata definition')
-            print "Bad metadata definition" 
     else:
         return HTTPBadRequest('No metadata')
-        print "Missing metadata"
            
     #add the sources to sources
         #add the source_files to the source
@@ -888,11 +887,9 @@ def add_dataset(request):
 
         files = src['files']
         for f in files:
-            print f
             #check if the file in the datasets is there.
             if not external and not os.path.isfile(f):
                 return HTTPBadRequest('File Not Found: Did you upload this file?')
-                print 'File Not Found: Did you upload this file?'
             sf = SourceFile(f)
             s.src_files.append(sf)
 
