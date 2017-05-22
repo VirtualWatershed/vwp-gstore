@@ -58,7 +58,6 @@ class EsSearcher():
         return '<EsSearcher (%s)>' % (self.es_url)
 
     def get_query(self):
-	#print "\nsearcher.get_query() function called...."
         """return the search filters 
 
         Notes:
@@ -106,7 +105,6 @@ class EsSearcher():
         return [(i['_id'], i['_type']) for i in self.results['hits']['hits']]
 
     def search(self):
-	#print "\nes_searcher.search() function called...."
         """execute the es request
 
         Notes:
@@ -119,23 +117,13 @@ class EsSearcher():
         Raises:
             Exception: returns the es error if the status code isn't 200
         """
-	#print "Again, the value of self.query_data: %s" % self.query_data
-        #print self.query_data
-        #print self.es_url 
-        #print self.query_data
         testdata=json.dumps(self.query_data)
-        #print "test data %s" % testdata
-        #print "Now we Post the request using json.dumps of self.query_data"
         results = requests.post(self.es_url, data=json.dumps(self.query_data), auth=(self.user, self.password))
-	#print "results.text"
-        #print results.text
         if results.status_code != 200:
             self.results = {}
             raise Exception(results.text)
 
         self.results = results.json()
-	#print "print self.results and now returning them to ??()"
-    	#print self.results        
         return self.results
 
     def parse_basic_query(self, app, query_params, exclude_fields=[], available_uuids=[]):
@@ -157,19 +145,13 @@ class EsSearcher():
         limit = int(query_params['limit']) if 'limit' in query_params else self.default_limit
         offset = int(query_params['offset']) if 'offset' in query_params else self.default_offset
 
-	#print "\nparse_basic_query() function called from es_searcher.py"
-        #print "limit: %s" % limit
-        #print "offset: %s" % offset
 
         #category
         theme, subtheme, groupname = self.extract_category(query_params)
 
-        #print "theme: %s, subtheme: %s, groupname: %s" % (theme,subtheme, groupname)
 
         #keywords
         keyword = query_params.get('query', '').replace('+', '')
-
-        #print "keyword: %s" % keyword
 
 
         #date added
@@ -178,18 +160,13 @@ class EsSearcher():
         end_added = query_params.get('end_time', '')
         end_added_date = convert_timestamp(end_added)
 
-        #print "start_added: %s,  end_added: %s" % (start_added_date,end_added_date)
-
         #valid dates
         start_valid = query_params.get('timestamp_start', '')
         start_valid_date = convert_datetimestamp(start_valid)
-        #print "start_valid_date: %s" % start_valid_date
         empty = ""
 
-        #print start_valid_date 2004-10-19 00:00:00
         end_valid = query_params.get('timestamp_end', '')
         end_valid_date = convert_datetimestamp(end_valid)
-        #print "end_valid_date: %s\n" % end_valid_date
 
 	#model run UUID
         model_run_uuid = query_params.get('model_run_uuid', '')
@@ -206,6 +183,10 @@ class EsSearcher():
         #model set (input output analytic)
         model_set = query_params.get('model_set', '')
 
+        #external user UUID
+        externaluserid = query_params.get('externaluserid', '')
+        #external app
+        externalapp = query_params.get('externalapp', '')
         #model set type (raw binary and vis)
         model_set_type = query_params.get('model_set_type', '')
 
@@ -222,7 +203,6 @@ class EsSearcher():
         box = query_params.get('box', '')
         epsg = query_params.get('epsg', '')
 
-	#print "Query params: %s" % query_params
 
         #sorting
         sort = query_params.get('sort', 'lastupdate')
@@ -248,8 +228,6 @@ class EsSearcher():
 
         #build the json data
         query_request = {"size": limit, "from": offset, "fields": self.default_fields}
-        #print "Begin building the Query request..."
-        #print "query_request: %s" % query_request
 
         # the main query block
         filtered = {}
@@ -283,6 +261,10 @@ class EsSearcher():
             ands.append({"query": {"term": {"model_vars": model_vars.lower()}}})
         if parent_model_run_uuid:
             ands.append({"query": {"term": {"parent_model_run_uuid": parent_model_run_uuid.lower()}}})
+        if externaluserid:
+            ands.append({"query": {"term": {"externaluserid": externaluserid.lower()}}})
+        if externalapp:
+            ands.append({"query": {"term": {"externalapp": externalapp.lower()}}})
         if model_set:
             ands.append({"query": {"term": {"model_set": model_set.lower()}}})
         if model_set_type:
@@ -341,7 +323,6 @@ class EsSearcher():
             for item in available_uuids:
                 shoulds.append({ "match" : { "model_run_uuid" : item } })
             ands.append({"query" : {"bool" : {"should" : shoulds} } })
-            #print ands
 
 
         if ands:
@@ -365,14 +346,10 @@ class EsSearcher():
             query_request.update({"query": {"filtered": filtered}})
 
         #and add the sort element back in
-        #print query_request
         query_request.update(sorts)
-        #print "\nFinal query request"
-        #print query_request
         #should have a nice es search
         self.query_data = query_request
 
-	#print "Now printing all self.query_data: %s" % self.query_data
 
     '''
     parse helpers
@@ -420,8 +397,6 @@ class EsSearcher():
             range_query = {"lte": end_date.strftime(self.dtfmt)}
         if start_date and end_date:
             range_query = {"gte": start_date.strftime(self.dtfmt), "lte": end_date.strftime(self.dtfmt)}
-        print "dtfmt : %s" % self.dtfmt
-        print "range_query : %s" % range_query
         return {"range": {element: range_query}}
 
     def build_date_filter(self, element, start_date, end_date):
@@ -450,7 +425,6 @@ class EsSearcher():
             range_query = {"lte": end_date.strftime(self.dfmt)}
         if start_date and end_date:
             range_query = {"gte": start_date.strftime(self.dfmt), "lte": end_date.strftime(self.dfmt)}
-        #print range_query
         return {"range": {element: range_query}}
 
 
@@ -805,7 +779,6 @@ class RepositorySearcher(EsSearcher):
 
 
         query_request.update({"query": {"filtered": {"filter": {"and": ands}}}})
-        print query_request
 
         self.query_data = query_request
 
