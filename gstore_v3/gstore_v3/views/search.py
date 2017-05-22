@@ -68,7 +68,7 @@ doctype response
 '''
 #TODO: replace the streamers here with the other streamer? meh, the other json is a different structure so maybe not.
 def generate_search_response(searcher, request, app, limit, base_url, ext, version=3):
-    print "\ngenerate_search_response() function called...."
+    #print "\ngenerate_search_response() function called...."
     """generate the streamer for the search results for doctypes
 
     Notes:
@@ -80,7 +80,7 @@ def generate_search_response(searcher, request, app, limit, base_url, ext, versi
     Raises:
     """
     total = searcher.get_result_total()
-    print "Total results returned: %s" % total
+    #print "Total results returned: %s" % total
 
     if total < 1:
         return return_no_results(ext)
@@ -144,38 +144,38 @@ def search_modelruns(request):
                 filter_cond.append(or_(Modelruns.public==True,Modelruns.userid==userid))
 
         if uid:
-                print "Model Run UID: %s" % uid
+                #print "Model Run UID: %s" % uid
                 filter_cond.append(Modelruns.userid==uid)
 
         if model_uuid:
-                print "Model Run UUID: %s" % model_uuid
+                #print "Model Run UUID: %s" % model_uuid
                 filter_cond.append(Modelruns.model_run_id==model_uuid)
 
         if research_name:
-                print "Research Name: %s" % research_name
+                #print "Research Name: %s" % research_name
                 filter_cond.append(Modelruns.researcher_name.contains(research_name))
         if keywords:
-                print "Keywords: %s" % keywords
+                #print "Keywords: %s" % keywords
                 filter_cond.append(Modelruns.model_keywords.contains(keywords))
         if modelName:
-                print "Model Name: %s" % modelName
+                #print "Model Name: %s" % modelName
                 filter_cond.append(Modelruns.model_run_name.contains(modelName))
         if desc:
-                print "Description: %s" % desc
+                #print "Description: %s" % desc
                 filter_cond.append(Modelruns.description.contains(desc))
 
 
-	print "\n\n********************"
-	print "FILTER CONDITIONS: %s" % filter_cond
-	print "******************************\n\n"
+#	print "\n\n********************"
+#	print "FILTER CONDITIONS: %s" % filter_cond
+#	print "******************************\n\n"
 
 	
 
 	if (filter_cond and len(filter_cond)>=1):
-	    	print "Filter conditions found with 1 parameter..."
+	    	#print "Filter conditions found with 1 parameter..."
 		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
 	else:
-		print "Filter conditions not found...printing all records"
+		#print "Filter conditions not found...printing all records"
 		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
 
 	response = Response(json.dumps({'results': [{'Model Run UUID':i.model_run_id,'Description': i.description,'Model Run Name':i.model_run_name,'Researcher Name': i.researcher_name,'Keywords':i.model_keywords} for i in model_query]}))
@@ -247,7 +247,7 @@ def search_categories(request):
     es_password = request.registry.settings['es_user'].split(':')[-1]
 
     es_url = es_connection + es_index + '/' + es_type +'/_search'
-    print es_url
+    #print es_url
 
     #set up the basic query with embargo/active flags at the dataset level BUT not the app here 
     #because the categories could be different for the apps (i.e. 'climate' for epscor and 'nrcs' for rgis (don't do that, though))
@@ -377,10 +377,10 @@ def search_categories(request):
         return query
 
     results = requests.post(es_url, data=json.dumps(query), auth=(es_user, es_password))
-    print json.dumps(query)
-    print results.text    
+    #print json.dumps(query)
+    #print results.text    
     data = results.json()
-    print data
+    #print data
     if 'facets' not in data:
         print "no facets in data"
         return return_no_results()
@@ -404,14 +404,14 @@ def search_categories(request):
 
 def get_available_uuids(request):
     userid = authenticated_userid(request)
-    print userid
+    #print userid
     if userid is None:
         isavailable = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True).all()
         isavailable_query = DBSession.query(Modelruns.model_run_id).filter(Modelruns.public==True)
     else:
         isavailable = DBSession.query(Modelruns.model_run_id).filter(or_(Modelruns.public==True,Modelruns.userid==userid)).all() 
         isavailable_query = DBSession.query(Modelruns.model_run_id).filter(or_(Modelruns.public==True,Modelruns.userid==userid))
-    print isavailable_query
+    #print isavailable_query
     available = []
     for row in isavailable:
         available.append( row[0] )
@@ -517,28 +517,28 @@ def search_doctypes(request):
 
     doctypes = request.matchdict['doctypes']
 
-    print "Function search_doctype() called"
-    print "ext: %s" % ext
-    print "app: %s" % app
-    print "doctypes: %s" % doctypes
+    #print "Function search_doctype() called"
+    #print "ext: %s" % ext
+    #print "app: %s" % app
+    #print "doctypes: %s" % doctypes
 
 
     #reset doctypes from the route-required plural to the doctype-required singular
     doctypes = ','.join([dt[:-1] for dt in doctypes.split(',')])
-    print "doctypes: %s" % doctypes
+    #print "doctypes: %s" % doctypes
     #print doctypes
     params = normalize_params(request.params)
-    print "params: %s" % params
+    #print "params: %s" % params
 
     #get version (not for querying, just for the output) 
     version = int(params.get('version')) if 'version' in params else 3
 
-    print "version: %s" % version
+    #print "version: %s" % version
 
     #and we still like the limit here
     limit = int(params['limit']) if 'limit' in params else 15
 
-    print "limit:%s" % limit
+    #print "limit:%s" % limit
 
     #set up the elasticsearch search object
     searcher = EsSearcher(
@@ -552,12 +552,12 @@ def search_doctypes(request):
     )
 
     #print "searcher"
-    print "Complete ES search URL: %s.... using the following params..." % searcher
-    print "URL root: %s" % request.registry.settings['es_root']
-    print "ES Index: %s" % request.registry.settings['es_dataset_index']
-    print "Doctype: %s" % doctypes
-    print "Username: %s" % request.registry.settings['es_user'].split(':')[0]
-    print "Password: %s" % request.registry.settings['es_user'].split(':')[-1]
+    #print "Complete ES search URL: %s.... using the following params..." % searcher
+    #print "URL root: %s" % request.registry.settings['es_root']
+    #print "ES Index: %s" % request.registry.settings['es_dataset_index']
+    #print "Doctype: %s" % doctypes
+    #print "Username: %s" % request.registry.settings['es_user'].split(':')[0]
+    #print "Password: %s" % request.registry.settings['es_user'].split(':')[-1]
 
     try:
         searcher.parse_basic_query(app, params, available_uuids=cleanavailable)

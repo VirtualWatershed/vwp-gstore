@@ -90,6 +90,8 @@ class Dataset(Base):
         Column('model_set_taxonomy', String(50)),
         Column('model_vars', String(200)),
         Column('model_run_name', String(200)),
+        Column('externaluserid', String(200)),
+        Column('externalapp', String(200)),
         schema='gstoredata'
     ) 
 
@@ -185,6 +187,7 @@ class Dataset(Base):
             return None
         lst = lst.split(',')
         
+        print self.excluded_formats
         exc_lst = self.excluded_formats
 
         #get all from one not in the other
@@ -306,6 +309,7 @@ class Dataset(Base):
             return null
             
         if geoimage:
+            print "geoimage found by Bill"
             get tif if tif
             get sid if sid
             get ecw if ecw
@@ -325,17 +329,19 @@ class Dataset(Base):
         """
         if self.taxonomy in ['file', 'table', 'service']:
             return None, None
-        elif self.taxonomy == 'geoimage':
+        elif self.taxonomy in ['geoimage', 'netcdf_isnobal', 'netcdf']:
+            print "geoimage found"
             srcs = self.sources
             src = None
             ext = ''
             #current supported formats
-            for r in ['tif', 'img', 'sid', 'ecw']:
+            for r in ['tif', 'img', 'sid', 'ecw', 'nc']:
                 src = [s for s in srcs if s.extension == r and s.active == True]
                 if src:
                     ext = r
                     break
             if not src:
+                print "no source"
                 #no match for valid raster type
                 return None, None
 
@@ -403,7 +409,7 @@ class Dataset(Base):
         Raises:
         """
     
-        results = {'type': 'dataset', 'id': self.id, 'model_set_taxonomy': self.model_set_taxonomy, 'model_set_type': self.model_set_type, 'model_set': self.model_set, 'model_run_uuid': self.model_run_uuid, 'model_run_name': self.model_run_name, 'model_vars': self.model_vars, 'parent_model_run_uuid': self.parent_model_run_uuid, 'uuid': self.uuid, 'description': self.description, 
+        results = {'type': 'dataset', 'id': self.id, 'model_set_taxonomy': self.model_set_taxonomy, 'model_set_type': self.model_set_type, 'model_set': self.model_set, 'externalapp': self.externalapp, 'externaluserid': self.externaluserid, 'model_run_uuid': self.model_run_uuid, 'model_run_name': self.model_run_name, 'model_vars': self.model_vars, 'parent_model_run_uuid': self.parent_model_run_uuid, 'uuid': self.uuid, 'description': self.description, 
                 'lastupdate': self.dateadded.strftime('%Y%m%d'), 'name': self.basename, 'taxonomy': self.taxonomy,
                 'categories': [{'modelname': t.theme, 'state': t.subtheme, 'location': t.groupname} for t in self.categories]}
         if self.box:
@@ -425,7 +431,7 @@ class Dataset(Base):
             #TODO: change the relate to only include active sources
             srcs = [s for s in self.sources if s.active]
 
-            if self.taxonomy == 'geoimage':
+            if self.taxonomy in ['geoimage', 'netcdf_isnobal', 'netcdf']:
                 #add the downloads by source
                 #TODO: maybe compare to the formats list?
                 dlds = [(s.set, s.extension) for s in srcs] # if not s.is_external]
@@ -446,7 +452,7 @@ class Dataset(Base):
                 for f in fmts:
                     sf = [s for s in srcs if s.extension == f]
                     if not sf:
-                        #if it's not in there, that's a whole other problem (i.e. why is it listed in the first place?)
+			print f                        #if it's not in there, that's a whole other problem (i.e. why is it listed in the first place?)
                         continue
                     sf = sf[0]
                     dlds.append((sf.set, f))
@@ -741,6 +747,8 @@ class Dataset(Base):
             preferred = ['zip', 'shp', 'kml', 'gml', 'geojson', 'json', 'csv', 'xls']
         elif self.taxonomy == 'table':
             preferred = ['zip', 'csv', 'xls', 'json']
+        elif self.taxonomy in ['netcdf_isnobal']:
+            preferred = ['nc', 'zip']
 
         canonical_format = ''
         for p in preferred:

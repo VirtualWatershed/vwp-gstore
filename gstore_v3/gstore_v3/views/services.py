@@ -11,7 +11,7 @@ from urlparse import urlparse
 import urllib2
 import json
 
-import Image
+from PIL import Image
 import mapscript
 from cStringIO import StringIO
 
@@ -26,6 +26,11 @@ from ..lib.database import *
 from ..lib.utils import get_image_mimetype, normalize_params
 from ..lib.spatial import *
 from ..lib.mongo import gMongoUri
+
+from osgeo.gdal import *
+import osgeo.gdal as gdal
+from osgeo.gdalconst import *
+import osgeo.osr as osr
 
 
 #TODO: refactor the mapfile generation part (see the awkwardness of the point symbol)
@@ -147,8 +152,30 @@ def getType(geomtype):
     else:
         return mapscript.MS_LAYER_POINT
 
+def getNetCDFTaxonomies():
+    return ['netcdf_isnobal', 'netcdf']
 
-def getLayer(d, src, dataloc, bbox, metadata_description={}):
+#def getNetCDFBandsDesc(taxonomy):
+#    if taxonomy == 'netcdf_isnobal':
+#        return "ISNoBal Timesteps 1-"
+#    return ""
+
+#def getNetCDFExcludeLayers(taxonomy):
+#    if taxonomy == 'netcdf_isnobal':
+#        return ['lon', 'lat', 'mask','alt','u','z']
+#    return []
+
+def getNetCDFLayerProps(taxonomy, layername):
+    if taxonomy in getNetCDFTaxonomies():
+        standardname = layername + "_layer_name"
+        description = layername + "_layer_desc"
+        units = layername + "_layer_units"
+        return {"standardname":standardname, "description":description, "units":units}
+    return {}
+        
+
+
+def getLayer(d, src, dataloc, bbox, metadata_description={}, global_metadata={}, exclude_layers={}):
     """
 
     get the layer obj by taxonomy (for now)
@@ -162,6 +189,7 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
     
     Raises:
     """
+    subdataset_metadata=""
     valid_basename = 'g_' + d.basename if d.basename[0] in '0123456789' else d.basename
 
     layer = mapscript.layerObj()
@@ -169,6 +197,23 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
     layer.status = mapscript.MS_ON
 
     layer.data = dataloc
+
+    netcdftaxonomies = getNetCDFTaxonomies()
+    if d.taxonomy in netcdftaxonomies:
+        print dataloc
+        nameparts = dataloc.split(':')
+        layerindex = len(nameparts) - 1
+        layersubname = nameparts[layerindex]
+        if layersubname[0:2] == '//':
+            layersubname = layersubname[2:]
+        if layersubname in exclude_layers:
+            return None
+
+        subdataset = Open(dataloc,GA_ReadOnly)
+        if subdataset is None:
+            return None
+        subdataset_metadata = subdataset.GetMetadata()
+        print subdataset_metadata
 
     layer.setExtent(bbox[0], bbox[1], bbox[2], bbox[3]) 
 
@@ -180,6 +225,43 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
     layer.metadata.set('ows_title', d.description)
 #    layer.metadata.set('ows_name', d.basename)
 
+    if subdataset_metadata:
+        #extract the layer subname
+        #nameparts = dataloc.split(':')
+        #layerindex = len(nameparts) - 1
+        #layersubname = nameparts[layerindex]
+        param_names = getNetCDFLayerProps(d.taxonomy, layersubname)
+        #print param_names
+        standardname = param_names['standardname']
+        #print standardname
+        description = param_names['description']
+        #print description
+        units = param_names['units']
+        #print units
+        #set values from param names
+        #print global_metadata
+        keys = global_metadata.keys()
+        
+        if standardname not in keys:
+            print "No " + standardname + " in global metadata!"
+            return None
+        if description not in keys:
+            print "No " + description + " in global metadata!"
+            return None
+        if units not in keys:
+            print "No " + units + " in global metadata!"
+            return None
+
+        layer.name = global_metadata[standardname]
+        layer.metadata.set('layer_title', global_metadata[standardname])
+        layer.metadata.set('wcs_label', global_metadata[standardname])
+        layer.metadata.set('ows_title', global_metadata[description])
+        layer.metadata.set('ows_abstract', global_metadata[description])
+        layer.metadata.set('layer_data_units', global_metadata[units])
+
+        layer.metadata.set('annotation_name', '%s: %s' % (global_metadata[standardname], d.dateadded))
+        
+
     if metadata_description:
         service = metadata_description['service']
 
@@ -189,7 +271,10 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('%s_metadata%s_href' % (service, flag), metadata_description['url'])
         layer.metadata.set('%s_metadata%s_format' % (service, flag), metadata_description['mimetype'])
         layer.metadata.set('%s_metadata%s_type' % (service, flag), metadata_description['standard'])
-    
+
+        bands = str(metadata_description['bands'])
+        processingbands = "BANDS=%s" % bands
+
     if d.taxonomy == 'vector':
         style = getStyle(d.geomtype)
 
@@ -243,6 +328,35 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
         layer.metadata.set('wcs_rangeset_label', d.description)
         layer.metadata.set('wcs_enable_request', '*')
 
+    elif d.taxonomy in getNetCDFTaxonomies():
+        #TODO: possibly add accurate units based on the epsg code
+        #TODO: check on the wcs_formats list & compare to outputformats - ARE THE NAMES CORRECT?
+        layer.setProjection('+init=epsg:%s' % (d.orig_epsg))
+        layer.setProcessing('CLOSE_CONNECTION=DEFER')
+	layer.setProcessing('SCALE=AUTO')
+        layer.setProcessing(processingbands)
+        layer.type = mapscript.MS_LAYER_RASTER
+#hb
+#        layer.offsite = mapscript.colorObj( 0 , 0 , 0 )
+        layer.metadata.set('ows_srs', 'epsg:%s' % (d.orig_epsg))
+        layer.metadata.set('queryable', 'no')
+        layer.metadata.set('background', 'no')
+        layer.metadata.set('time_sensitive', 'no')
+        layer.metadata.set('raster_selected', 'yes')
+        layer.metadata.set('static', 'no')
+        layer.metadata.set('wcs_formats', 'GEOTIFF_16')
+
+        #TODO: change the native format - not everything is a geotiff now
+        #layer.metadata.set('wcs_nativeformat', 'GTiff')
+
+        layer.metadata.set('wcs_rangeset_name', "Timesteps")
+        layer.metadata.set('wcs_rangeset_label', d.description)
+        layer.metadata.set('wcs_enable_request', '*')
+	layer.metadata.set('wcs_rangeset_axes', 'bands')
+	layer.metadata.set('wcs_bands_name','Timestep')
+	layer.metadata.set('wcs_bands_label','Timestep Number')
+	layer.metadata.set('wcs_bands_rangeitem','_bands')
+
     #check for any mapfile settings
     #TODO: refactor this to make it nicer (woof)
     #TODO: how does this handle vector classes? whoops, it doesn't.
@@ -252,8 +366,8 @@ def getLayer(d, src, dataloc, bbox, metadata_description={}):
             processing_directives = mapsettings.get_processing()
             for directive in processing_directives:
                 layer.setProcessing(directive)
-
-            if d.taxonomy == 'geoimage' and 'WCS-NODATA' in mapsettings.settings:
+            nodatataxonomies = ['geoimage','netcdf_isnobal', 'netcdf']
+            if d.taxonomy in nodatataxonomies and 'WCS-NODATA' in mapsettings.settings:
                 #add the wcs nullvalue flag
                 nodata = mapsettings.settings['WCS-NODATA']
                 layer.metadata.set('wcs_rangeset_nullvalue', nodata)
@@ -546,12 +660,14 @@ def datasets(request):
         
     #and get the type (if not there assume capabilities but really that should fail)
     ogc_req = params.get('request', 'GetCapabilities')
+    #get bands for WMS
+    bands = params.get('bands') if 'bands' in params else '1'
 
     #go get the dataset
     d = get_dataset(dataset_id)   
-
+    print d
     if not d or d.inactive or d.is_embargoed:
-        return HTTPNotFound()
+        return HTTPNotFound('Dataset not found in database or is embargoed')
 
     if d.is_available == False:
         return HTTPNotFound('Temporarily unavailable')
@@ -571,14 +687,13 @@ def datasets(request):
     base_url = request.registry.settings['BALANCER_URL']
    
     supported_standards = d.get_standards(request)
-
+    print supported_standards
     req_app = DBSession.query(GstoreApp).filter(GstoreApp.route_key==app.lower()).first()
     if not req_app:
         app_prefs = ['FGDC-STD-001-1998','FGDC-STD-012-2002','ISO-19115:2003']
     else:
         app_prefs = req_app.preferred_metadata_standards    
     std = next(s for s in app_prefs if s in supported_standards)
-
     #need to identify the data source file
     #so a tif, sid, ecw for a geoimage
     #or a shapefile for vector (or build if not there)
@@ -602,10 +717,12 @@ def datasets(request):
         metadata_info = None
 
     mapsrc, srcloc = d.get_mapsource(fmtpath, mongo_uri, int(srid), metadata_info) # the source obj, the file path
+    print mapsrc
+    print srcloc
 
     #need both for a raster, but just the file path for the vector (we made it!)
     if ((not mapsrc or not srcloc) and d.taxonomy == 'geoimage') or (d.taxonomy == 'vector' and not srcloc):
-        return HTTPNotFound()
+        return HTTPNotFound("Problem with mapsrc or srcloc")
 
 
     #NOTE: the wms_tiles has been deprecated but some older bots? still ping it
@@ -690,7 +807,7 @@ def datasets(request):
 
         m.web.metadata.set('ows_title', valid_basename)
 
-        if d.taxonomy == 'geoimage':
+        if d.taxonomy in ['geoimage', 'netcdf_isnobal', 'netcdf']:
             m.web.metadata.set('wcs_onlineresource', '%s/apps/%s/datasets/%s/services/ogc/wcs' % (base_url, app, d.uuid))
             m.web.metadata.set('wcs_label', valid_basename)
             m.web.metadata.set('wcs_name', valid_basename)
@@ -800,13 +917,55 @@ def datasets(request):
                 'standard': std, 
                 'mimetype': 'text/xml', 
                 'url': '%s%s/metadata/%s.xml' % (base_url, d.uuid, std), 
-                'template_path': templatepath #for the vector template location
+                'template_path': templatepath, #for the vector template location
+                'bands': bands
             }
-        layer = getLayer(d, mapsrc, srcloc, bbox, metadata_description)
+        netcdftaxonomies = getNetCDFTaxonomies()
+        if d.taxonomy in netcdftaxonomies:
+            netcdf = Open(srcloc,GA_ReadOnly)
+            netcdf_metadata=netcdf.GetMetadata()
+            global_keys = netcdf_metadata.keys()
+            if 'bands_name' not in global_keys:
+                return HTTPNotFound('Improperly formatted VWP NetCDF - needs bands_name field in metadata!')
+            bands_name = netcdf_metadata['bands_name']
+            if bands_name not in global_keys:
+                return HTTPNotFound('Improperly formatted VWP NetCDF - ' + bands_name + ' not found in metadata!')
+            bandnum = netcdf_metadata[bands_name]
+            #banddesc = getNetCDFBandsDesc(d.taxonomy) + str(bandnum)
+            if 'bands_desc' not in global_keys:
+                return HTTPNotFound('Improperly formatted VWP NetCDF - needs bands_desc field in metadata!')
+            banddesc = netcdf_metadata['bands_desc']
+            exclude_layers=[]
+            if 'exclude_layers' in global_keys:
+                exclude_layers = netcdf_metadata['exclude_layers'].split(',')
+            print exclude_layers
+            i = 2
+            bandsvals = "1"
+            while i <= int(bandnum):
+                bandsvals = bandsvals + "," + str(i)
+                i+=1
+
+            netcdf_subdatasets = netcdf.GetMetadata('SUBDATASETS')
+            subdatasetNames=[]
+            for key in netcdf_subdatasets:
+                if key.find("NAME") != -1 :
+                    sds_name = netcdf_subdatasets[key]
+                    subdatasetNames.append(sds_name)
+
+            for name in subdatasetNames:
+                layer = getLayer(d, mapsrc, name, bbox, metadata_description, netcdf_metadata, exclude_layers)
+                #do more things to the layer?
+                if layer:
+                    layer.metadata.set('wcs_bands_description', banddesc)
+                    layer.metadata.set('wcs_bands_values', bandsvals)
+                    m.insertLayer(layer)
+                
+        else:
+            layer = getLayer(d, mapsrc, srcloc, bbox, metadata_description)
 
         #what the. i don't even. why is it adding an invalid tileitem? and it doesn't stop
         #layer.tileitem = ''
-        m.insertLayer(layer)
+            m.insertLayer(layer)
 
     #post the results
     mapname = '%s/%s.%s.map' % (mappath, d.uuid, mapsrc_uuid)

@@ -106,7 +106,7 @@ all the routing
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    authn_policy = AuthTktAuthenticationPolicy('EDACsecret', callback=groupfinder, hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
+    authn_policy = AuthTktAuthenticationPolicy(settings['tokengen'], callback=groupfinder, hashalg='sha512', cookie_name='vwp', timeout=1200, reissue_time=120)
     authz_policy = ACLAuthorizationPolicy()
     config = Configurator(root_factory=RootFactory,authentication_policy=authn_policy,authorization_policy=authz_policy,settings=settings)    
     config.include('pyramid_chameleon')
@@ -129,9 +129,18 @@ def main(global_config, **settings):
 
     config.add_route('home', '/')    
 
+#utility routes
+#code found at https://gist.github.com/mitchellrj/3721859
+    config.add_route('options', '/*path', request_method='OPTIONS')
+    config.add_route('trace', '/*path', request_method='TRACE')
+
+
 #auth routes
     config.add_route('private', '/private')
     config.add_route('createuser', '/createuser')
+    config.add_route('createexternaluser', '/createexternaluser', request_method='POST')
+    config.add_route('showexternalusers', '/showexternalusers')
+    config.add_route('tieaccount2app', '/createexternalapp', request_method='POST')
     config.add_route('login', '/login')
     config.add_route('apilogin', '/apilogin')
     config.add_route('logout', '/logout')
@@ -233,7 +242,9 @@ def main(global_config, **settings):
     #VW specific.
     config.add_route('threddscheck','/threddscheck', request_method='GET')
     config.add_route('edit_model_run', '/apps/{app}/editmodelrun', request_method='PUT')
+    config.add_route('gettoken', '/gettoken', request_method='GET')
     config.add_route('add_data', '/apps/{app}/data', request_method='POST')
+    config.add_route('swift_data', '/apps/{app}/swiftdata', request_method='GET')
     config.add_route('add_model_id', '/apps/{app}/newmodelrun', request_method='POST') 
     config.add_route('check_model_id', '/apps/{app}/checkmodeluuid', request_method='POST')
     config.add_route('delete_model_id', '/apps/{app}/deletemodelid', request_method='DELETE')

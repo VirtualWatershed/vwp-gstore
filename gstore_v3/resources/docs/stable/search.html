@@ -43,14 +43,14 @@
                         </div>
                         <div class="http-options">
                             <p>
-                                Search for data objects within an application. 
+                                Search for data objects within an application.
                             </p>
                             <p>
-                                Search results are provided as a JSON response or as a KML file. The KML file 
+                                Search results are provided as a JSON response or as a KML file. The KML file
                                 provides the data object's bounding box, title and service definition URL for
-                                any geospatial object. 
+                                any geospatial object.
                             </p>
-                        
+
                             <h4>Request Parameters</h4>
 
                             <h5>Route Parameters</h5>
@@ -252,6 +252,20 @@
                                         <td>raw, binary, vis</td>
                                         <td>F</td>
                                     </tr>
+                                    <tr>
+                                        <td>externalapp</td>
+                                        <td>limit search to only the datasets that are assoiated with external app.</td>
+                                        <td>string</td>
+                                        <td></td>
+                                        <td>F</td>
+                                    </tr>
+                                    <tr>
+                                        <td>externaluserid</td>
+                                        <td>limit search to only the datasets that are assoiated with external userid.</td>
+                                        <td>UUID</td>
+                                        <td></td>
+                                        <td>F</td>
+                                    </tr>
 									<tr>
 										<td>model_set_taxonomy</td>
 										<td>Defines the taxonomy of data to search for within a model set</td>
@@ -292,7 +306,7 @@
 										<td>The state the model run was run in</td>
 										<td>string</td>
 										<td>New Mexico, Idaho, Nevada</td>
-										<td>F</td>																																																		
+										<td>F</td>
 									</tr>
 									<tr>
 										<td>location</td>
@@ -315,7 +329,7 @@
 										<td></td>
 										<td>F</td>
 									</tr>
-									
+
 
                                 </tbody>
                             </table>
@@ -325,7 +339,7 @@
 
                             <p>Search for Virtual Watershed datasets in ISNOBAL model and return results as JSON:</p>
                             <p class="example">/apps/<span class="route-highlight">vwp</span>/search/<span class="route-highlight">datasets</span>.<span class="route-highlight">json</span>?version=3&limit=10&offset=0&modelname=isnobal</p>
-                            
+
                             <p>Search for Virtual Watershed datasets in ISNOBAL model and return the first 10 results as a KML file:</p>
                             <p class="example">/apps/<span class="route-highlight">vwp</span>/search/<span class="route-highlight">datasets</span>.<span class="route-highlight">kml</span>?limit=10&offset=0&modelname=isnobal</p>
 
@@ -341,7 +355,7 @@
                                     <div><span class="schema-object">subtotal</span> (<span class="schema-datatype">integer</span>): number of data objects returned in the response</div>
                                     <div><span class="schema-object">results</span> (<span class="schema-datatype">array[dict]</span>): [see data object reference(s) for schema specifications]</div>
                                 </div>
-                                
+
                                 <pre>
 {
     "total": 3,
@@ -547,10 +561,10 @@
                             <p>Coming soon.</p>
 
                        </div>
-                        
+
                     </div>
                 </li>
-                
+
                 <li id="search-categories">
                     <div>
                         <div class="http-definition">
@@ -623,7 +637,7 @@
                                 <h5>Schema</h5>
                                 <div class="schema-block">
                                     <div><span class="schema-object">total</span> (<span class="schema-datatype">integer</span>): number number of facet elements returned</div>
-                                    <div><span class="schema-object">results</span> (<span class="schema-datatype">array[dict]</span>): 
+                                    <div><span class="schema-object">results</span> (<span class="schema-datatype">array[dict]</span>):
                                         <div class="schema-nested-object">
                                             <div><span class="schema-object">text</span> (<span class="schema-datatype">string</span>): facet name</div>
                                             <div><span class="schema-object">leaf</span> (<span class="schema-datatype">boolean</span>): indicates facet order; if true, the facet has no sub-facets</div>
@@ -632,8 +646,8 @@
                                         </div>
                                     </div>
                                 </div>
-            
-                            
+
+
                                 <p>Response for any higher order facet (will contain children):</p>
                                 <pre>
 {
@@ -686,7 +700,7 @@
                             </h3>
                         </div>
                         <div class="http-options">
-                            <p>Search one of the supported geospatial lookup sets (USGS quad names, GNIS placenames, etc) for bounding box 
+                            <p>Search one of the supported geospatial lookup sets (USGS quad names, GNIS placenames, etc) for bounding box
                             identification. Supports the data object spatial searches.
                             </p>
                             <p>Note: occasionally USGS quad names change. Whenever possible, the set is updated to reflect those changes.</p>
@@ -778,15 +792,15 @@
                             <div>
                                 <h5>Schema</h5>
                                 <div class="schema-block">
-                                    <div><span class="schema-object">results</span> (<span class="schema-datatype">array[dict]</span>): 
+                                    <div><span class="schema-object">results</span> (<span class="schema-datatype">array[dict]</span>):
                                         <div class="schema-nested-object">
                                             <div><span class="schema-object">box</span> (<span class="schema-datatype">array[double]</span>): bounding box coordinates as minx, miny, maxx, maxy</div>
                                             <div><span class="schema-object">text</span> (<span class="schema-datatype">string</span>): object name</div>
                                         </div>
                                     </div>
                                 </div>
-            
-                            
+
+
                                 <p>Response for a quad name search:</p>
                                 <pre>
 {"results": [
@@ -823,11 +837,11 @@
                             </h3>
                         </div>
                         <div class="http-options">
-                            <p>Search for an inventory of requested items. Returns a list of items for each parameter passed, including a number of 
+                            <p>Search for an inventory of requested items. Returns a list of items for each parameter passed, including a number of
                                total options.
                             </p>
                             <p>Future work will include a total amount for each individual option.
-                            
+
                             <h4>Request Parameters</h4>
                             <h5>Route Parameters</h5>
                             <table class="params">
@@ -925,7 +939,7 @@
         "param": "watershedname",
         "watershedname": [
             {
-                "watershed": 
+                "watershed":
                     ["Dry Creek"]
             }
         ]
@@ -933,11 +947,11 @@
     {
         "modelname": [
             {
-                "model": 
+                "model":
                     ["isnobal"]
             },
             {
-                "model": 
+                "model":
                     ["reference"]
             }
         ],
@@ -974,7 +988,7 @@
             <div class="col-sm-6">
                 <!-- <img src="../images/EDAC-Banner1_2.png"> -->
             </div>
-            
+
         </div>
     </footer>
 

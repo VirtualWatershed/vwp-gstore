@@ -155,6 +155,9 @@ def add_model_id(request):
         os.mkdir(parent_dir)
     if not os.path.isdir(output_path):
         os.mkdir(output_path)
+    response = Response(dataset_uuid)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
     return Response(dataset_uuid)
 
 #**************************************************************************************************************************
@@ -250,6 +253,9 @@ def delete_model_id(request):
 			  DBSession.commit()
 			  print "\nDeleting model run record from model_runs table......%s" % model_uuid
 			  deletedModelRun="Deleted model run uuid: %s" % model_uuid
+                          response = Response(deletedModelRun)
+                          response.headers['Access-Control-Allow-Origin'] = '*'
+                          response.headers['Access-Control-Allow-Credentials'] = 'true'
 			  return Response(deletedModelRun)	
 
 	      #if the model run has children equal to the passed model_run_uuid, then do nothing and exit

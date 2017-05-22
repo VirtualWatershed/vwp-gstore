@@ -96,7 +96,7 @@
                                         <div><span class="schema-object">type</span> (<span class="schema-datatype">string</span>): object type</div>
                                         <div><span class="schema-object">taxonomy</span> (<span class="schema-datatype">string</span>): dataset type (geoimage or vector or file or table)</div>
                                         <p class="bg-callouts bg-warning">"geoimage" refers to a raster dataset.</p>
-                                        <div><span class="schema-object">categories</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">categories</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">theme</span> (<span class="schema-datatype">string</span>): theme (root)</div>
                                                 <div><span class="schema-object">subtheme</span> (<span class="schema-datatype">string</span>): subtheme (level 1)</div>
@@ -104,48 +104,48 @@
                                             </div>
                                         </div>
 
-                                        <div><span class="schema-object">downloads</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">downloads</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{format}</span> (<span class="schema-datatype">string</span>): URL for the zipped download for the format</div>
                                                 <p class="bg-callouts bg-warning">The keys referenced by {format} are the list of supported data formats for this dataset.</p>
                                             </div>
                                         </div>
 
-                                        <div><span class="schema-object">services</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">services</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{service}</span> (<span class="schema-datatype">string</span>): URL for the OGC service GetCapabilities request</div>
                                                 <p class="bg-callouts bg-warning">The keys referenced by {service} are the list of supported OGC services for this dataset (wms, wcs, or wfs).</p>
                                             </div>
                                         </div>
 
-                                        <div><span class="schema-object">metadata</span> (<span class="schema-datatype">array[dict]</span>): 
+                                        <div><span class="schema-object">metadata</span> (<span class="schema-datatype">array[dict]</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{standard}</span> (<span class="schema-datatype">dict</span>):
                                                     <div class="schema-nested-object">
                                                         <div><span class="schema-object">{format}</span> (<span class="schema-datatype">string</span>): URL for the documentation for the standard and format specified</div>
-                                                        
+
                                                     </div>
                                                     <p class="bg-callouts bg-warning">The keys referenced by {format} are the list of supported documentation formats for the standard.</p>
                                                     <p class="bg-callouts bg-warning">The keys referenced by {standard} are the list of supported documentation standards for this dataset.</p>
                                                 </div>
                                             </div>
-                                            
-                                            
+
+
                                         </div>
-                                        <div><span class="schema-object">metadata-modified</span> (<span class="schema-datatype">dict</span>): 
+                                        <div><span class="schema-object">metadata-modified</span> (<span class="schema-datatype">dict</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">{standard}</span> (<span class="schema-datatype">date</span>): (yyyy-MM-ddTHH:MM:SSZ) date, in UTC, the source documentation was modified </div>
                                                 <p class="bg-callouts bg-warning">The keys referenced by {standard} are the list of supported documentation standards for this dataset. In most cases, this key will be "all" to indicate that the modifications made to the source documentation are reflected in all documentation representations.</p>
                                             </div>
                                         </div>
-                                        <div><span class="schema-object">spatial</span> (<span class="schema-datatype">dict</span>): 
+                                        <div><span class="schema-object">spatial</span> (<span class="schema-datatype">dict</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">epsg</span> (<span class="schema-datatype">integer</span>): EPSG code of the original data source</div>
                                                 <div><span class="schema-object">bbox</span> (<span class="schema-datatype">array[double]</span>): bounding box in WGS84 as minx, miny, maxx, maxy</div>
                                                 <p class="bg-callouts bg-warning">Unless otherwise noted, vector datasets generated by the GSToRE platform are in WGS84 (EPSG:4326). The EPSG code referenced here refers only to the source data (the ZIP format).</p>
                                             </div>
                                         </div>
-                                        <div><span class="schema-object">prov</span> (<span class="schema-datatype">dict</span>): 
+                                        <div><span class="schema-object">prov</span> (<span class="schema-datatype">dict</span>):
                                             <div class="schema-nested-object">
                                                 <div><span class="schema-object">ontology</span> (<span class="schema-datatype">dict</span>):
                                                     <div class="schema-nested-object">
@@ -158,7 +158,7 @@
                                         </div>
                                         <div><span class="schema-object">preview</span> (<span class="schema-datatype">string</span>): URL to the GSToRE-hosted preview request.</div>
                                         <p class="bg-callouts bg-danger">This service will be deprecated shortly.</p>
-                                        
+
                                     </div>
 
                                     <p>Response for a raster dataset:</p>
@@ -266,7 +266,7 @@
                             <p class="example">/apps/<span class="route-highlight">rgis</span>/datasets/<span class="route-highlight">b6b22969-dfa9-41e5-a836-c483b099c8f7</span>/dataset.<span class="route-highlight">kml</span></p>
 
                             <h4>Response</h4>
-                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of 
+                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of
                             the dataset.</p>
                         </div>
                     </li>
@@ -282,7 +282,7 @@
                         <div class="http-options">
                             <p></p>
 
-                            <p>Some datasets are hosted on external sites or, if the format is "html", are external sites. In those instances, 
+                            <p>Some datasets are hosted on external sites or, if the format is "html", are external sites. In those instances,
                             the request redirects you to the external location. The options available through the query parameters are not available for those
                             datasets, nor are any GSToRE-generated documentation files included with the response.
                             </p>
@@ -370,7 +370,7 @@
                             <p class="example">/apps/<span class="route-highlight">rgis</span>/datasets/<span class="route-highlight">0acbf4fd-d2ab-4216-9c48-803418166003</span>/<span class="route-highlight">nmgrossreceipts_jan_jun2011</span>.<span class="route-highlight">derived</span>.<span class="route-highlight">kml</span></p>
 
                             <h4>Response</h4>
-                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of 
+                            <p>The structure of the response depends on the format requested, the filters of the request and the structure of
                             the dataset.</p>
                         </div>
                     </li>
@@ -643,7 +643,1069 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                             <p>Coming soon.</p>
                         </div>
                     </li>
-                      <li id="newmodelrun">
+                    <li id="swiftupload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">GET</span>
+                                <span class="http-path">/apps/{app}/swiftdata</span>
+                                <span class="http-name">Upload data to the server using swift</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Allows uploading of model data to the Virual Watershed filesystem using swift client intermediary.</p>
+
+
+                            <h4>Request Parameters</h4>
+                            <h5>Route Parameters</h5>
+                            <p>None.</p>
+                            <h5>Query Parameters</h5>
+                            <p>filename: Name of file</p>
+                            <p>modelid: Model Run UUID (name of container in swift) </p>
+                            <p>preauthurl: Url (provided by <a href="services.html#gettoken">gettoken</a> for swift request</p>
+                            <p>preauthtoken: Token (provided by <a href="services.html#gettoken">gettoken</a> for swift request </p>
+                            <h5>Examples:</h5>
+                            <p>Use case for creating a new model run in VWP, obtaining a swift token and uploading data to that model run using Python</p>
+                            <pre>import requests
+import os
+import subprocess
+import json
+import uuid
+url = 'https://vwp-dev.unm.edu/'
+newmodelurl = url + 'apps/vwp/newmodelrun'
+apiloginurl = url + 'apilogin'
+gettokenurl = url + 'gettoken'
+swiftuploadurl = url + 'apps/vwp/swiftdata'
+s = requests.Session()
+user = 'yourusername'
+password = 'yourpassword'
+login = s.get(apiloginurl, auth=(user,password), verify=False)
+if login.status_code == 200:
+    # Create Model
+    newuuid=str(uuid.uuid1())
+    modeldata = json.dumps({"description": "Swift Upload Example","model_run_name":"$model_run_name" ,"model_keywords":"your keywords here"})
+    newmodelname = "swift upload example " + newuuid
+    data = modeldata.replace('$model_run_name', newmodelname)
+
+    result = s.post(newmodelurl, data=data)
+
+    model_run_uuid = result.text
+
+    # Request Token
+
+    token = json.loads(s.get(gettokenurl).text)
+
+    preauthurl = token['preauthurl']
+    preauthtoken = token['preauthtoken']
+
+    # Upload to Swift using token
+
+    containername = model_run_uuid
+    filename = 'sample_inputs.nc'
+    segmentsize = 1073741824 # 1 Gig
+
+    command = ['swift']
+    command.append('upload')
+    command.append(containername)
+    command.append('-S')
+    command.append(str(segmentsize))
+    command.append(filename)
+    command.append('--os-storage-url='+preauthurl)
+    command.append('--os-auth-token='+preauthtoken)
+
+    print "Uploading..."
+
+    print command
+
+    ls_output = subprocess.check_output(command)
+
+    print ls_output
+
+    print "Telling VWP to download..."
+
+    params = {'modelid':model_run_uuid,'filename':filename,'preauthurl':preauthurl,'preauthtoken':preauthtoken}
+
+    r = s.get(swiftuploadurl, params=params)
+    if r.status_code == 200:
+        print "VWP has successfully downloaded data file!"
+    else:
+        print "Download failure"
+        print r.text
+else:
+    print "Login failure"
+    print login.text
+                            </pre>
+                            <h4>Response</h4>
+                            <p>Coming soon.</p>
+                        </div>
+                    </li>
+                    <li id="datasetupload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">PUT</span>
+                                <span class="http-path">/apps/{app}/datasets</span>
+                                <span class="http-name">Upload Dataset Information</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Uploads information about data that has been inserted in to the database.</p>
+                            <p>Payload for this method is a formatted JSON with the following required structure: </p>
+                            <pre>{
+    "formats": [],
+    "description": "$description",
+    "externaluserid": "$valid_UUID",
+    "sources": [
+        {
+            "mimetype":"$mimetype",
+            "files": [
+                "$inputFilePath"
+            ],
+            "set":"$set",
+            "external":"$external",
+            "extension":"$extension"
+        }
+    ],
+    "taxonomy":"$taxonomy",
+    "basename":"$basename",
+    "parent_model_run_uuid":"$parent_model_run_uuid",
+    "apps":[
+
+    ],
+    "model_set_taxonomy":"$model_set_taxonomy",
+    "model_run_uuid":"$model_run_uuid",
+    "records":"$records",
+    "model_set":"$model_set",
+    "spatial":{
+       "geomtype":"$geomtype",
+       "records":"$spatial_records",
+       "features":"$features",
+       "bbox":"$bbox",
+       "epsg":"$epsg"
+    },
+    "services":[
+        "$service1",...
+    ],
+    "model_set_type":"$model_set_type",
+    "standards":[
+        "$standard1",...
+    ],
+    "active":"$active",
+    "model_vars":"$model_vars",
+    "categories":[
+        {
+         "state":"$state",
+         "modelname":"$modelname",
+         "location":"$location"
+      }
+    ],
+    "metadata":{
+        "xml":"$xml"
+        "upgrade":"$upgrade",
+        "standard":"$xmlstandard"
+    }
+}
+                            </pre>
+
+                            <p>The above is a reasonable baseline template for both raster and vector inserts. However, while filling in the above information is sufficient for raster inserts, vector inserts require additional steps, detailed below. </p>
+                            <h4>Request Parameters</h4>
+                            <p>None.</p>
+                            <h5>Route Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Put Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>formats</td>
+                                        <td>The file formats that are intended to be offered as downloads</td>
+                                        <td>list of strings</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>description</td>
+                                        <td>Description of this dataset</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>sources</td>
+                                        <td>Dictionary detailing file information</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>mimetype</td>
+                                        <td>Internet Media Type of transmitted data</td>
+                                        <td>string</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>files</td>
+                                        <td>List of full paths to the uploaded file on the Virtual Watershed</td>
+                                        <td>list of strings</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>set</td>
+                                        <td>'original' or 'derived', should be 'original for purposes of insert</td>
+                                        <td>string</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>external</td>
+                                        <td>If file whose associated data is located on another server</td>
+                                        <td>string</td>
+                                        <td>true, false(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>extension</td>
+                                        <td>extension of original file</td>
+                                        <td>string</td>
+                                        <td>(attribute of sources)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>taxonomy</td>
+                                        <td>Taxonomy of data for purposes of processing</td>
+                                        <td>string</td>
+                                        <td>file, vector, geoimage, table, service, netcdf_[model]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>basename</td>
+                                        <td>Name used for all download paths when building URLs</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>parent_model_run_uuid</td>
+                                        <td>Parent Model Run UUID for this model run</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>apps</td>
+                                        <td>Application alia</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_set_taxonomy</td>
+                                        <td>Defines the taxonomy of data for searches within a model set</td>
+                                        <td>string</td>
+                                        <td>grid, vector, file</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_run_uuid</td>
+                                        <td>Model Run UUID specific to all datasets in this model run</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>records</td>
+                                        <td>Number of records in this dataset; should equal records number in spacial information</td>
+                                        <td>integer</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_set</td>
+                                        <td>Defines the set of data to assign this data to</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>spatial</td>
+                                        <td>Dictionary of spatial information regarding the dataset</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>geomtype</td>
+                                        <td>Geometry type (required for Vector only)</td>
+                                        <td>string</td>
+                                        <td>POINT, LINESTRING, POLYGON (attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>records</td>
+                                        <td>Number of records associated to features (usually same as number of features</td>
+                                        <td>int</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>features</td>
+                                        <td>Number of features represented by this dataset, usually 1 for rasters and many for vectors</td>
+                                        <td>int</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>bbox</td>
+                                        <td>Bounding box coordinates as a comma-delimited list</td>
+                                        <td>string</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>epsg</td>
+                                        <td>EPSG code of the provided BOX geometry</td>
+                                        <td>int</td>
+                                        <td>(attribute of spatial)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>services</td>
+                                        <td>List of services that are requested to be supported</td>
+                                        <td>sring</td>
+                                        <td>wms, wcd, wfs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_set_type</td>
+                                        <td>Defines type of data within the model set</td>
+                                        <td>sring</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>standards</td>
+                                        <td>GIS metadata standards to support</td>
+                                        <td>list of strings</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>active</td>
+                                        <td>Whether this dataset is visible to users to start</td>
+                                        <td>string</td>
+                                        <td>true, false</td>
+                                    </tr>
+                                    <tr>
+                                        <td>model_vars</td>
+                                        <td>Comma delimited string of variables represented by inputs and outputs</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>categories</td>
+                                        <td>A triplet enforced by our database as a means of dividing data in to categories and subcategories</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>modelname</td>
+                                        <td>Top level category, name of model type being run</td>
+                                        <td>string</td>
+                                        <td>(attribute of categories)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>state</td>
+                                        <td>Mid level category, name of the state that the model was run in</td>
+                                        <td>string</td>
+                                        <td>(attribute of categories)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>location</td>
+                                        <td>Bottom level category, name of the watershed that hte model was run in</td>
+                                        <td>string</td>
+                                        <td>(attribute of categories)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>metadata</td>
+                                        <td>Attached metadata for this file</td>
+                                        <td>dictionary</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>xml</td>
+                                        <td>Original Metadata XML. Please use correct and verified metadata as per <a href="https://www.fgdc.gov/metadata/geospatial-metadata-standards">FGDC standards</a> </td>
+                                        <td>string</td>
+                                        <td>See Examples below for XML template(attribute of metadata)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>standard</td>
+                                        <td>Standard that this metadata is in (should be in supported metadata list)</td>
+                                        <td>string</td>
+                                        <td>(attribute of metadata)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>upgrade</td>
+                                        <td>Whether to upgrade metadata to gstore</td>
+                                        <td>string</td>
+                                        <td>true, false(attribute of metadata)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Examples:</h5>
+                            <p>XML Metadata Template</p>
+                            <p>Replace any Unknowns with information about your data that is known</p>
+                            <p>All tags within this template are required; if you do not have this information leave it as unknown.</p>
+                            <pre><xmp><!DOCTYPE metadata SYSTEM "http://www.fgdc.gov/metadata/fgdc-std-001-1998.dtd">
+<metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin>Unknown</origin>
+                <pubdate>Unknown</pubdate>
+                <title>Unknown</title>
+                <geoform>Unknown</geoform>
+                <pubinfo>
+                    <pubplace>Unknown</pubplace>
+                    <publish>Unknown</publish>
+                </pubinfo>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>Unknown</abstract>
+            <purpose>Unknown</purpose>
+            <supplinf>Unknown</supplinf>
+        </descript>
+        <timeperd>
+            <timeinfo>
+                <rngdates>
+                    <begdate>Unknown</begdate>
+                    <enddate>Unknown</enddate>
+                </rngdates>
+            </timeinfo>
+            <current>Unknown</current>
+        </timeperd>
+        <status>
+            <progress>Complete</progress>
+            <update>Unknown</update>
+        </status>
+        <spdom>
+            <bounding>
+                <westbc>-106.375</westbc> <!--Required valid coordinate-->
+                <eastbc>-106.3125</eastbc><!--Required valid coordinate-->
+                <northbc>36.1875</northbc><!--Required valid coordinate-->
+                <southbc>36.125</southbc> <!--Required valid coordinate-->
+            </bounding>
+        </spdom>
+        <keywords>
+            <theme>
+                <themekt>Unknown</themekt>
+                <themekey>Unknown</themekey>
+            </theme>
+            <theme>
+                <themekt>Unknown</themekt>
+                <themekey>Unknown</themekey>
+            </theme>
+            <theme>
+                <themekt>Unknown</themekt>
+                <themekey>Unknown</themekey>
+                <themekey>Unknown</themekey>
+            </theme>
+            <place>
+                <placekt>None</placekt>
+                <placekey>Unknown</placekey>
+            </place>
+        </keywords>
+        <accconst>Unknown</accconst>
+        <useconst>Unknown</useconst>
+        <ptcontac>
+            <cntinfo>
+                <cntperp>
+                    <cntper>Unknown</cntper>
+                </cntperp>
+                <cntaddr>
+                    <addrtype>Unknown</addrtype>
+                    <address>Unknown</address>
+                    <city>Unknown</city>
+                    <state>Unknown</state>
+                    <postal>Unknown</postal>
+                    <country>Unknown</country>
+                </cntaddr>
+                <cntvoice>Unknown</cntvoice>
+                <cntemail>Unknown</cntemail>
+            </cntinfo>
+        </ptcontac>
+        <native>Unknown</native>
+    </idinfo>
+    <dataqual>
+        <logic>Unknown</logic>
+        <complete>Unknown</complete>
+        <posacc>
+            <horizpa>
+                <horizpar>Unknown</horizpar>
+                <qhorizpa>
+                    <horizpav>0.0</horizpav> <!--Must be of type double-->
+                    <horizpae>Unknown</horizpae>
+                </qhorizpa>
+            </horizpa>
+        </posacc>
+        <lineage>
+            <srcinfo>
+                <srccite>
+                    <citeinfo>
+                        <origin>Unknown</origin>
+                        <pubdate>Unknown</pubdate>
+                        <title>Unknown</title>
+                        <pubinfo>
+                            <pubplace>Unknown</pubplace>
+                            <publish>Unknown</publish>
+                        </pubinfo>
+                    </citeinfo>
+                </srccite>
+                <typesrc>Unknown</typesrc>
+                <srctime>
+                    <timeinfo>
+                        <rngdates>
+                            <begdate>Unknown</begdate>
+                            <enddate>Unknown</enddate>
+                        </rngdates>
+                    </timeinfo>
+                    <srccurr>Unknown</srccurr>
+                </srctime>
+                <srccitea>Unknown</srccitea>
+                <srccontr>Unknown</srccontr>
+            </srcinfo>
+            <procstep>
+                <procdesc>Unknown</procdesc>
+                <procdate>Unknown</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>Unknown</cntorg>
+                        </cntorgp>
+                        <cntpos>Unknown</cntpos>
+                        <cntaddr>
+                            <addrtype>Unknown</addrtype>
+                            <address>Unknown</address>
+                            <address>Unknown</address>
+                            <city>Unknown</city>
+                            <state>Unknown</state>
+                            <postal>Unknown</postal>
+                            <country>Unknown</country>
+                        </cntaddr>
+                        <cntvoice>Unknown</cntvoice>
+                        <cntfax>Unknown</cntfax>
+                        <cntemail>Unknown</cntemail>
+                        <hours>Unknown</hours>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+        </lineage>
+    </dataqual>
+    <spdoinfo>
+        <indspref>Unknown</indspref>
+        <direct>Raster</direct> <!--  Point, Vector, or Raster-->
+        <rastinfo>
+            <rasttype>Pixel</rasttype> <!--Point, Pixel, Grid Cell, Voxel-->
+            <rowcount>1</rowcount><!--integer minimum of 1-->
+            <colcount>1</colcount><!--integer minimum of 1-->
+            <vrtcount>1</vrtcount><!--integer minimum of 1-->
+        </rastinfo>
+    </spdoinfo>
+    <eainfo>
+        <detailed>
+            <enttyp>
+                <enttypl>Unknown</enttypl>
+                <enttypd>Unknown</enttypd>
+                <enttypds>Unknown</enttypds>
+            </enttyp>
+            <attr>
+                <attrlabl>Unknown</attrlabl>
+                <attrdef>Unknown</attrdef>
+                <attrdefs>Unknown</attrdefs>
+                <attrdomv>
+                    <rdom>
+                        <rdommin>Unknown</rdommin>
+                        <rdommax>Unknown</rdommax>
+                        <attrunit>Unknown</attrunit>
+                    </rdom>
+                </attrdomv>
+            </attr>
+        </detailed>
+    </eainfo>
+    <distinfo>
+        <distrib>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Unknown</cntorg>
+                </cntorgp>
+                <cntpos>Unknown</cntpos>
+                <cntaddr>
+                    <addrtype>Unknown</addrtype>
+                    <address>Unknown</address>
+                    <address>Unknown</address>
+                    <city>Unknown</city>
+                    <state>Unknown</state>
+                    <postal>Unknown</postal>
+                    <country>Unknown</country>
+                </cntaddr>
+                <cntvoice>Unknown</cntvoice>
+                <cntfax>Unknown</cntfax>
+                <cntemail>Unknown</cntemail>
+                <hours>Unknown</hours>
+            </cntinfo>
+        </distrib>
+        <distliab>Unknown</distliab>
+        <stdorder>
+            <digform>
+                <digtinfo>
+                    <formname>Unknown</formname>
+                    <transize>1</transize><!--Integer greater that 0-->
+                </digtinfo>
+                <digtopt>
+                    <offoptn>
+                        <offmedia>Unknown</offmedia>
+                        <recfmt>Unknown</recfmt>
+                    </offoptn>
+                </digtopt>
+            </digform>
+            <fees>Unknown</fees>
+        </stdorder>
+    </distinfo>
+    <metainfo>
+        <metd>20130116</metd> <!--Valid date in in patter \d{4}(\d{2}(\d{2})?)?|bc\d{4}(\d{2}(\d{2})?)?|cc\d{5,}|cd\d{5,} -->
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Unknown</cntorg>
+                </cntorgp>
+                <cntpos>Unknown</cntpos>
+                <cntaddr>
+                    <addrtype>Unknown</addrtype>
+                    <address>Unknown</address>
+                    <address>Unknown</address>
+                    <address>Unknown</address>
+                    <city>Unknown</city>
+                    <state>Unknown</state>
+                    <postal>Unknown</postal>
+                </cntaddr>
+                <cntvoice>Unknown</cntvoice>
+                <cntfax>Unknown</cntfax>
+                <cntemail>Unknown</cntemail>
+                <hours>Unknown</hours>
+            </cntinfo>
+        </metc>
+        <metstdn>Unknown</metstdn>
+        <metstdv>Unknown</metstdv>
+        <mettc>local time</mettc><!--local time, local time with time differential factor, or  universal time-->
+        <metsi>
+            <metscs>Unknown</metscs>
+            <metsc>Unknown</metsc>
+            <metshd>Unknown</metshd>
+        </metsi>
+    </metainfo>
+</metadata>
+</xmp></pre>
+                            <h4>Response</h4>
+                            <p>modelrun UUID</p>
+                        </div>
+                    </li>
+                    <li id="datasetupdate">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">PUT</span>
+                                <span class="http-path">/apps/{app}/datasets/{dataset_uuid}</span>
+                                <span class="http-name">Update Dataset Information</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Updates information about a dataset that has been inserted in to the database.</p>
+                            <p>Payload for this method is a formatted JSON with the same structure as <a href="stable/datasets.html#datasetupload">Dataset Information Upload</a> </p>
+
+                            <p>The above is a reasonable baseline template for both raster and vector inserts. However, while filling in the above information is sufficient for raster inserts, vector inserts require additional steps, detailed below. </p>
+                            <h4>Request Parameters</h4>
+                            <p>None.</p>
+                            <h5>Route Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Put Parameters</h5>
+                            <p>See <a href="stable/datasets.html#datasetupload">Dataset Information Upload</a> </p>
+                            <h5>Examples:</h5>
+                            <pre></pre>
+                            <h4>Response</h4>
+                            <p>modelrun UUID</p>
+                        </div>
+                    </li>
+                    <li id="attributesupload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">PUT</span>
+                                <span class="http-path">/apps/{app}/datasets/{dataset_uuid}/attributes</span>
+                                <span class="http-name">Upload Attribute Information</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Uploads attribute information about an existing vector dataset.</p>
+                            <p>Payload for this method is a formatted JSON with the following structure: </p>
+                            <pre>{
+    "dataset": "$dataset_uuid",
+    "fields": [ #list of entries with the following form:
+        {
+            "name": "$name",
+            "description": "$description",
+            "orig_name": "$orig_name",
+            "ogr_type": "$ogr_type",
+            "nodata": "$nodataval"
+            "ogr_precision": "$ogr_precision"
+            "ogr_width": "$ogr_width"
+            "ogr_justify": "$ogr_justify"
+        }# ,...
+    ]
+}
+                            </pre>
+                            <h4>Request Parameters</h4>
+                            <p>None.</p>
+                            <h5>Route Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>rgis, epscor, elseweb</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Put Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>dataset</td>
+                                        <td>The UUID of the dataset</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>fields</td>
+                                        <td>List of dictionaries representing attribute</td>
+                                        <td>list of dictionaries</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>name</td>
+                                        <td>Name pulled the layer field definition</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>description</td>
+                                        <td>Description of this layer</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>orig_name</td>
+                                        <td>Name pulled the layer field definition</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_type</td>
+                                        <td>OGR Data type from the layer field definition</td>
+                                        <td>string</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>nodata</td>
+                                        <td>Value used to represent no data</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_precision</td>
+                                        <td>Precision of data from the layer field definition</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_width</td>
+                                        <td>Width of data from the layer field definition</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ogr_justify</td>
+                                        <td>Justify from the layer field definition</td>
+                                        <td>int,float</td>
+                                        <td>(attribute of fields)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Examples:</h5>
+                            <pre></pre>
+                            <h4>Response</h4>
+                            <p>modelrun UUID</p>
+                        </div>
+                    </li>
+                    <li id="geometriesupload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">PUT</span>
+                                <span class="http-path">/apps/{app}/datasets/{dataset_uuid}/features</span>
+                                <span class="http-name">Upload Geometry Information</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Uploads geometry information about an existing vector dataset.</p>
+                            <p>Payload for this method is a formatted JSON with the following structure: </p>
+                            <pre>{
+    "gid": "$gid",
+    "geom": "$geom"
+}
+                            </pre>
+                            <h4>Request Parameters</h4>
+                            <p>None.</p>
+                            <h5>Route Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Put Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>gid</td>
+                                        <td>The feature id of the geometry/feature.</td>
+                                        <td>string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>geom</td>
+                                        <td>Well-Known Binary representation of geometry from the feature, encoded to a hex string</td>
+                                        <td>hex string</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Examples:</h5>
+                            <pre></pre>
+                            <h4>Response</h4>
+                            <p>modelrun UUID</p>
+                        </div>
+                    </li>
+                    <li id="featuresupload">
+                        <div class="http-definition">
+                            <h3>
+                                <span class="http-method">PUT</span>
+                                <span class="http-path">/apps/{app}/datasets/{dataset_uuid}/attributefeatures</span>
+                                <span class="http-name">Upload Attribute Feature Information</span>
+                            </h3>
+                        </div>
+
+                        <div class="http-options">
+                            <p>Uploads attribute feature information about an existing vector dataset.</p>
+                            <p>Payload for this method is a formatted JSON with the following structure: </p>
+                            <pre>{
+    "fids": [], # list of feature ids,
+    "records": [ # list of records
+        {
+            "fid": "$fid",
+            "uuid": "$uuid",
+            "observed": "$observed",
+            "atts": [ # list of attributes
+                { #attribute features
+                    "name": "$att_name",
+                    "u": "$att_uuid",
+                    "val": "$att_val",
+                    "qual": "$att_
+                }
+            ]
+        }
+    ]
+}
+                            </pre>
+                            <h4>Request Parameters</h4>
+                            <p>None.</p>
+                            <h5>Route Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>app</td>
+                                        <td>Application alias</td>
+                                        <td>string</td>
+                                        <td>vwp</td>
+                                    </tr>
+                                    <tr>
+                                        <td>dataset_uuid</td>
+                                        <td>Dataset identifier</td>
+                                        <td>uuid</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Put Parameters</h5>
+                            <table class="params">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Options</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>fids</td>
+                                        <td>List of feature IDs</td>
+                                        <td>list of string</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>records</td>
+                                        <td>A list of features</td>
+                                        <td>list of dictionaries</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>fid</td>
+                                        <td>Feature id of this attribute feature</td>
+                                        <td>string</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>uuid</td>
+                                        <td>UUID of associated geometry</td>
+                                        <td>uuid</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>observed</td>
+                                        <td>Datetime observed</td>
+                                        <td>datetime</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>atts</td>
+                                        <td>List of attributes</td>
+                                        <td>list of dictionaries</td>
+                                        <td>(attribute of records)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>name</td>
+                                        <td>Name of this attribute feature</td>
+                                        <td>string</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>u</td>
+                                        <td>UUID of this attribute feature</td>
+                                        <td>uuid</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>val</td>
+                                        <td>Value of this attribute feature</td>
+                                        <td>(varies)</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>qual</td>
+                                        <td>(optional)</td>
+                                        <td>(varies)</td>
+                                        <td>(attribute of atts)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <h5>Examples:</h5>
+                            <pre></pre>
+                            <h4>Response</h4>
+                            <p>modelrun UUID</p>
+                        </div>
+                    </li>
+                    <li id="newmodelrun">
                         <div class="http-definition">
                             <h3>
                                 <span class="http-method">POST</span>
@@ -727,8 +1789,8 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                     </ul>
                 </div>
             </div>
-        
-        
+
+
         </div>
     </div>
     <footer >
@@ -741,7 +1803,7 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
             <div class="col-sm-6">
                 <!-- <img src="../images/EDAC-Banner1_2.png"> -->
             </div>
-            
+
         </div>
     </footer>
 

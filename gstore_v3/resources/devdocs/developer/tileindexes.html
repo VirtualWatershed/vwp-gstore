@@ -109,7 +109,64 @@
                             <p>To identify which OGC services are supported for a given tile index, please refer to the tile index's service response (<a href="#description">Get tile index description</a>).</p>
 
                             <h5>Examples</h5>
-                            <p>Coming soon.</p>
+
+                            <p><strong>WCS Services for netCDF Files</strong></p>
+			    <p>WCS requests for layers in netCDF files will specify a single layer. Multiple bands, however, can be specified in a request using the '&Bands' directive. If no bands are specified, all bands in the netCDF layer will be returned.</p>
+			
+			    <p>The following URL specifies a particular layer name (&COVERAGE), specifies the projection (Lat-Long NAD83) in which BBOX coordinates are specified (&CRS), and the response projection (&RESPONSE_CRS), returns a netCDF file (&FORMAT), and requests multiple bands (&Bands=1,2,3)</p>
+			    <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf&Bands=1,2,3'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf&Bands=1,2,3</a>
+
+			    <br><br>
+                            <p>The following URL specifies a particular layer name (&COVERAGE), specifies the projection (Lat-Long NAD83) in which BBOX coordinates are specified (&CRS), and the response projection (&RESPONSE_CRS), returns a netCDF file (&FORMAT), and requests a single band (&Bands=1)</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf&Bands=1'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=downwelling_longwave_flux_in_air&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=netcdf&Bands=1</a>
+                            <br><br>
+
+
+                            <p><strong>WCS Services for Geotiff Files</strong></p>
+                            <p>WCS requests for layers in geotiff files will specify the filename without the 'tif' extension.</p>
+
+                            <p>The following URL specifies a particular layer name (&LAYERS=), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, and returns a PNG file (&FORMAT=).The layer name corresponds to the 'name:' element found in the output json when listing the datasets in the VW</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/821b5737-a0cc-4db4-b351-240b5d956eb7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=in.1780.I_lw&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=GEOTIFF_16'>http://vwp-dev.unm.edu/apps/vwp/datasets/821b5737-a0cc-4db4-b351-240b5d956eb7/services/ogc/wcs?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=in.1780.I_lw&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&CRS=epsg:4269&RESPONSE_CRS=epsg:26911&WIDTH=170&HEIGHT=148&Format=GEOTIFF_16</a>
+
+                            <br><br>
+
+
+                            <p><strong>WMS Services for netCDF Files</strong></p>
+			    <p>WMS services will generally be for a single band per layer. As for WCS requests, this is accomplished with the '&Bands=' directive. See the examples below.</p>
+
+
+                            <p>The following URL specifies a particular layer name (&LAYERS=), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, and returns a PNG file (&FORMAT=). The layer name corresponds to the 'name:' element found in the output json when listing the datasets in the VW</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/821b5737-a0cc-4db4-b351-240b5d956eb7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=in.1780.I_lw&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG'>http://vwp-dev.unm.edu/apps/vwp/datasets/821b5737-a0cc-4db4-b351-240b5d956eb7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=in.1780.I_lw&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG</a>
+                            <br><br>
+                            <p>The following URL specifies a particular layer name (&LAYERS=), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, returns a PNG file (&FORMAT=), and specifies a single layer band should be returned (&BANDS=2).</p>
+
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG&Bands=1,2,3'>http://vwp-dev.unm.edu/apps/vwp/datasets/5f080b22-1c7d-4121-b7bf-5021e14025a7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=downwelling_longwave_flux_in_air&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG&Bands=1,2,3</a>
+                            <br><br>
+
+
+                           <p><strong>WMS Services for GeoTiff Files</strong></p>
+                            <p>WMS services will generally be for a single geotiff file.</p>
+
+
+                            <p>The following URL specifies a particular layer name (&LAYERS=), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, and returns a PNG file (&FORMAT=). The layer name corresponds to the 'name:' element found in the output json when listing the datasets in the VW</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/821b5737-a0cc-4db4-b351-240b5d956eb7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=in.1780.I_lw&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG'>http://vwp-dev.unm.edu/apps/vwp/datasets/821b5737-a0cc-4db4-b351-240b5d956eb7/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=in.1780.I_lw&STYLES=&BBOX=-116.142905556,43.7294055556,-116.137583333,43.7326972222&SRS=epsg:4269&WIDTH=680&HEIGHT=592&Format=PNG</a>
+                            <br><br>
+
+
+                           <p><strong>WMS Services for Vector Files</strong></p>
+                            <p>WMS services will generally be for a single vector file.</p>
+
+
+                            <p>The following URL specifies a particular layer name (&LAYERS=), specifies the projection (&SRS=4269) in which BBOX coordinates are specified, and returns a PNG file (&FORMAT=).  The layer name corresponds to the 'name:' element found in the output json when listing the datasets in the VW</p>
+                            <a href='http://vwp-dev.unm.edu/apps/vwp/datasets/e123bbae-fa17-4d68-a9ae-11cb02d5ad1c/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=Idaho_counties_26911&STYLES=&BBOX=-117.243,41.9885,-111.042,49.0013&SRS=epsg:4269&WIDTH=680&HEIGHT=792&Format=PNG'>http://vwp-dev.unm.edu/apps/vwp/datasets/e123bbae-fa17-4d68-a9ae-11cb02d5ad1c/services/ogc/wms?SERVICE=WMS&VERSION=1.0.0&REQUEST=GetMap&LAYERS=Idaho_counties_26911&STYLES=&BBOX=-117.243,41.9885,-111.042,49.0013&SRS=epsg:4269&WIDTH=680&HEIGHT=792&Format=PNG</a>
+                            <br><br>
+
+
+                            <p><strong>WFS Services</strong></p>
+                            <p>WFS services deliver vector data as Geographic Markup Language (GML). It is necessary to specify layer name (&TYPENAME=) and the output projection (&CRS=).</p>
+                            <p>The following URL specifies the layer and the output projection.</p>
+                            <a href='http://vwp-dev.unm.edu//apps/vwp/datasets/e123bbae-fa17-4d68-a9ae-11cb02d5ad1c/services/ogc/wms?SERVICE=WFS&VERSION=1.0.0&REQUEST=getfeature&typename=Idaho_counties_26911&styles=&crs=EPSG:4236'>http://vwp-dev.unm.edu//apps/vwp/datasets/e123bbae-fa17-4d68-a9ae-11cb02d5ad1c/services/ogc/wms?SERVICE=WFS&VERSION=1.0.0&REQUEST=getfeature&typename=Idaho_counties_26911&styles=&crs=EPSG:4236</a>
+                            <br><br>
 
                             <h4>Response</h4>
                             <p>The structure of the response varies depending on the OGC service and query parameters selected. </p>

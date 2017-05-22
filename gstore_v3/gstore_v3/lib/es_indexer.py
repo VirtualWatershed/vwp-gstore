@@ -472,7 +472,6 @@ class DatasetIndexer(EsIndexer):
         doc.update(self.build_date_element("date_published", self.gstore_object.date_published))     
 
         if self.gstore_object.begin_datetime:
-            #print self.gstore_object.begin_datetime
             doc.update(self.build_date_time_element("valid_start", self.gstore_object.begin_datetime))
         if self.gstore_object.end_datetime:
             doc.update(self.build_date_time_element("valid_end", self.gstore_object.end_datetime))
@@ -482,7 +481,6 @@ class DatasetIndexer(EsIndexer):
         standards = self.gstore_object.get_standards(self.request)
         repos = self.gstore_object.get_repositories()
         #TODO: metadata standards?
-        #print doc
         doc.update({
                 "applications": self.gstore_object.apps_cache, 
                 "formats": formats, 
@@ -522,6 +520,10 @@ class DatasetIndexer(EsIndexer):
  
         doc.update({"parent_model_run_uuid": self.gstore_object.parent_model_run_uuid})
 
+        doc.update({"externaluserid": self.gstore_object.externaluserid})
+
+        doc.update({"externalapp": self.gstore_object.externalapp})
+
         doc.update({"model_set": self.gstore_object.model_set})
 
         doc.update({"model_set_type": self.gstore_object.model_set_type})
@@ -549,7 +551,6 @@ class DatasetIndexer(EsIndexer):
         #TODO: ADD THE COLLECTION UUIDs SO THAT WE CAN SEARCH WITHIN COLLECTION
         if self.gstore_object.collections:
             doc.update({"collections": [str(c.uuid) for c in self.gstore_object.collections]})
-        print doc
         #self.document = {self.es_description['type']: doc}
         self.document = doc
       
@@ -658,6 +659,9 @@ class DatasetIndexer(EsIndexer):
             elif key == 'parent_model_run_uuid':
                 data_to_update.update({"parent_model_run_uuid": self.gstore_object.parent_model_run_uuid})
 
+            elif key == 'externaluserid':
+                data_to_update.update({"externaluserid": self.gstore_object.externaluserid})
+
             elif key == 'model_set':
                 data_to_update.update({"model_set": self.gstore_object.model_set})
 
@@ -755,6 +759,7 @@ class CollectionIndexer(EsIndexer):
         doc.update({"model_vars": self.gstore_object.model_vars})
         doc.update({"parent_model_run_uuid": self.gstore_object.parent_model_run_uuid})
         doc.update({"model_set": self.gstore_object.model_set})
+        doc.update({"externaluserid": self.gstore_object.externaluserid})
         doc.update({"model_set_type": self.gstore_object.model_set_type})
         doc.update({"model_set_taxonomy": self.gstore_object.model_set_taxonomy})
 

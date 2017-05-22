@@ -9,8 +9,15 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from paste.httpheaders import AUTHORIZATION
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPUnprocessableEntity, HTTPUnauthorized
 from ..models import DBSession
+from sqlalchemy.sql.expression import and_
 from ..models.users import (
     Users,
+    )
+from ..models.externalusers import (
+    Externalusers,
+    )
+from ..models.externalapps import (
+    ExternalApps,
     )
 from ..models.password_reset_codes import (
     Password_Reset_Codes,
@@ -21,7 +28,7 @@ from ..models.resources import (
     ResourceInstitutions
     )
 
-
+import json
 import binascii
 import base64
 import hashlib
@@ -75,7 +82,7 @@ def passwordreset(request):
         checkemail = DBSession.query(Users.userid,Users.salt).filter(Users.email==email).first()
         if(checkemail==None):
             message = 'email address not found'
-        else:        
+        else:
             userid=checkemail.userid
             randomcode = uuid.uuid4().hex
             salt=checkemail.salt
@@ -84,12 +91,12 @@ def passwordreset(request):
             base_url = request.registry.settings['BALANCER_URL_SECURE']
             resetpath = "/reset?resetcode="
             reseturl = base_url + resetpath + resetcode
-            checkuserid = DBSession.query(Password_Reset_Codes.userid).filter(Password_Reset_Codes.userid==userid).first()                    
+            checkuserid = DBSession.query(Password_Reset_Codes.userid).filter(Password_Reset_Codes.userid==userid).first()
             #for multiple attempts at reset password requests.
             if(checkuserid!=None):
                 d=DBSession.query(Password_Reset_Codes.resetcode).filter(Password_Reset_Codes.userid==userid).delete()
                 DBSession.commit()
-            newcode = Password_Reset_Codes(userid=userid, resetcode=resetcode)            
+            newcode = Password_Reset_Codes(userid=userid, resetcode=resetcode)
             DBSession.add(newcode)
             DBSession.commit()
             DBSession.flush()
@@ -168,10 +175,6 @@ def passwordreset(request):
 @view_config(route_name='reset', renderer='../templates/reset.pt')
 def reset(request):
     resetcode=request.params['resetcode']
-    #login_url = request.route_url('login')
-    #referrer = request.url
-    #if referrer == login_url:
-    #    referrer = '/' # never use the login form itself as came_from
     referrer = '/'
     came_from = request.params.get('came_from', referrer)
 
@@ -238,7 +241,7 @@ def changemypassword(request):
         newpassword1 = request.params['newpassword1']
         newpassword2 = request.params['newpassword2']
         if newpassword1==newpassword2:
-            pwtest=passcheck(password)
+            pwtest=passcheck(newpassword1)
             if pwtest is True:
                 currentuser = DBSession.query(Users.salt,Users.password).filter(Users.userid==userid).first()
                 salt=currentuser.salt
@@ -250,7 +253,7 @@ def changemypassword(request):
                     updatecurrentuser = DBSession.query(Users.password).filter(Users.userid==userid).update({'password': new_hashed_password})
                     DBSession.commit()
                     print "user %s changed password" % userid
-                
+
                     headers = forget(request)
                     return HTTPFound(location = came_from, headers = headers)
                     message = 'Password has changed, and you have been logged out. Please login with your new password.'
@@ -271,6 +274,108 @@ def changemypassword(request):
         )
 
 
+#*********************************************************************************************************************
+@view_config(route_name='showexternalusers', permission='loggedin')
+def showexternalusers(request):
+    userid = authenticated_userid(request)
+    UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
+    appname = DBSession.query(ExternalApps.name,ExternalApps.appid).filter(ExternalApps.userid==UserIDInt).first()
+    response=Response()
+    response.content_type = 'application/json'
+    if(appname):
+           externaluserids=DBSession.query(Externalusers.uuid).filter(Externalusers.appid==appname[1]).all()
+           data = {}
+           data['app'] = appname[0]
+           data['userids'] = []
+           for externaluserid in externaluserids:
+                  data['userids'].append(externaluserid[0])
+#"externalapp": appname[0], "externalusersids"[]}
+           response.body = json.dumps(data)
+           return response
+    else:
+           response=Response()
+           response.status_code=428
+           response.body="Account is not asociated with any external applications."
+           return response
+
+#*********************************************************************************************************************
+
+@view_config(route_name='createexternaluser', permission='loggedin')
+def createexternaluser(request):
+    userid = authenticated_userid(request)
+    UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
+    externalappname = DBSession.query(ExternalApps.name).filter(and_(ExternalApps.userid==UserIDInt)).first()
+    if(externalappname):
+        post_data = request.json_body
+        uuid = post_data['userid']
+        app = externalappname
+        pattern = re.compile("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
+
+        if pattern.match(uuid):
+             existUser=DBSession.query(Externalusers.uuid).filter(Externalusers.uuid==uuid).first()
+
+             existApp=DBSession.query(ExternalApps.appid).filter(ExternalApps.name==app).first()
+
+             if(existApp):
+                 if(existUser):
+                     print "Can't add %s, User already exists" % uuid
+                     return HTTPUnprocessableEntity("Can't add external user, external user already exists in database")
+                 else:
+                    newuser = Externalusers(uuid=uuid,appid=existApp[0])
+                    try:
+                        DBSession.add(newuser)
+                        DBSession.commit()
+                        DBSession.flush()
+                        DBSession.refresh(newuser)
+                        message="User ID created: %s" % uuid
+                        return Response(message)
+                    except Exception as err:
+                        return HTTPServerError(err)
+             else:
+                 return HTTPUnprocessableEntity("Can't add external user, app does not exist")
+        else:
+            return HTTPUnprocessableEntity(uuid + " is not a valid UUID")
+    else:
+        return HTTPUnprocessableEntity("Account has not app associated with it.")
+
+#*********************************************************************************************************************
+
+@view_config(route_name='tieaccount2app', permission='loggedin')
+def tieaccount2app(request):
+    post_data = request.json_body
+    name = post_data['application']
+    userid = authenticated_userid(request)
+    #get the logged in users userid
+    UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
+    print UserIDInt
+    print name
+    existTie = DBSession.query(ExternalApps).filter(and_(ExternalApps.name==name, ExternalApps.userid==UserIDInt)).first()
+    print "Existing app?: %s" % existTie
+    if(existTie):
+           return HTTPUnprocessableEntity("Relationship exists")
+    else:
+        existName = DBSession.query(ExternalApps.name).filter(ExternalApps.userid==UserIDInt).first()
+        if(existName):
+                return HTTPUnprocessableEntity("Account " +userid+" is aleady associated with " + existName[0]+". Account and application is a one to one relationshsip.")
+        else:
+            existID = DBSession.query(ExternalApps.userid).filter(ExternalApps.name==name).first()
+            if(existID):
+                UserName=DBSession.query(Users.userid).filter(Users.id==existID[0]).first()
+                return HTTPUnprocessableEntity("Applicaiton " +name+" is aleady associated with account " + UserName[0])
+            else:
+                newapp = ExternalApps(name=name,userid=UserIDInt)
+                try:
+                     DBSession.add(newapp)
+                     DBSession.commit()
+                     DBSession.flush()
+                     DBSession.refresh(newapp)
+                     message=userid + " now tied to " + name
+                     return Response(message)
+                except Exception as err:
+                     return HTTPServerError(err)
+
+
+
 
 
 #*********************************************************************************************************************
@@ -282,7 +387,7 @@ def apicreateuser(request):
     lastname = request.params['lastname']
     email = request.params['email']
     password = request.params['password']
-    address1 = request.params['address1'] 
+    address1 = request.params['address1']
     address2 = request.params['address2']
     city = request.params['city']
     state = request.params['state']
@@ -291,7 +396,7 @@ def apicreateuser(request):
     tel_fax = request.params['tel_fax']
     country = request.params['country']
     salt = os.urandom(33).encode('base_64')
-    hashed_password = hashlib.sha512(password + salt).hexdigest()    
+    hashed_password = hashlib.sha512(password + salt).hexdigest()
 
 
     existUser=DBSession.query(Users.userid).filter(Users.userid==userid).first()
@@ -319,9 +424,6 @@ def apicreateuser(request):
 @view_config(route_name='createuser', renderer='../templates/createuser.pt', permission='createuser')
 def createuser(request):
 
-#        login_url = request.route_url('createuser')
- #       referrer = request.url
-  #      if referrer == login_url:
         referrer = '/'
         came_from = request.params.get('came_from', referrer)
         firstname = ''
@@ -353,19 +455,17 @@ def createuser(request):
             newitem = (item.id, item.name, item.initials)
             institution.append(newitem)
 
- #       password = ''
         if 'form.submitted' in request.params:
             firstname = request.params['firstname']
             lastname = request.params['lastname']
             email = request.params['email']
             userid = request.params['email']
-#            password = request.params['password']
             address1 = request.params['address1']
             address2 = request.params['address2']
             city = request.params['city']
             state_init = request.params['state']
             print state_init
-            
+
             zipcode = request.params['zipcode']
             tel_voice = request.params['tel_voice']
             tel_fax = request.params['tel_fax']
@@ -477,7 +577,7 @@ def createuser(request):
                     s.sendmail(me, you, msg.as_string())
                     s.quit()
                     message="User created: %s" % userid
- 
+
                 except Exception as err:
                     return HTTPServerError(err)
 
@@ -558,7 +658,7 @@ def login(request):
 def apilogin(request):
     formuserid = request.params.get('userid') if 'userid' in request.params else ''
     formpassword = request.params.get('password') if 'password' in request.params else ''
-    auth = request.environ.get('HTTP_AUTHORIZATION') 
+    auth = request.environ.get('HTTP_AUTHORIZATION')
     #if the user is using basic auth...
     if auth:
         try:
