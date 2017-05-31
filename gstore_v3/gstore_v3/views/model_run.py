@@ -18,6 +18,12 @@ from ..models.model_runs import (
 from ..models.users import (
     Users,
     )
+from ..models.externalusers import (
+    Externalusers,
+    )
+from ..models.externalapps import (
+    ExternalApps,
+    )
 
 from ..models.datasets import Dataset, Category
 from ..models.sources import Source, SourceFile
@@ -135,9 +141,34 @@ def add_model_id(request):
     researcher_name= firstname + " " + lastname
     model_run_name=request.json['model_run_name']
     model_keywords=request.json['model_keywords']
+    #set external app to supplied value or 'n/a' by default.
+    externaluserid = request.json['externaluserid'] if 'externaluserid' in request.json else 'n/a'
+    externalapp = 'n/a'
+    #if user supplied an external user UUID
+    if externaluserid != "n/a":
+        #if the UUID is valid
+        pattern = re.compile("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
+        if pattern.match(externaluserid):
+            #Check if user exists
+            usersappid=DBSession.query(Externalusers.appid).filter(Externalusers.uuid==externaluserid).first()
+            if not (usersappid):
+                return HTTPBadRequest("External user "+externaluserid+" does not exist")
+            userid = authenticated_userid(request)
+            #Get the posting users associated app
+            UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
+            externalappinfo = DBSession.query(ExternalApps.appid,ExternalApps.name).filter(ExternalApps.userid==UserIDInt[0]).first()     
+
+            if externalappinfo[0] != usersappid[0]:
+                return HTTPBadRequest("You do not have permissons to insert as this external user.")
+            else:
+                externalapp=externalappinfo[1]
+        else:
+            return HTTPUnprocessableEntity(externaluserid + " is not a valid UUID")
+    #Now we have the app and the user uuid.
+
     public = request.json.get('public') if 'public' in request.json else True
     print userid
-    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords, userid=userid, public=public)
+    modelrun = Modelruns(model_run_id=provided_uuid, description=description, researcher_name=researcher_name, model_run_name=model_run_name, model_keywords=model_keywords, userid=userid, public=public, externalapp=externalapp, externaluserid=externaluserid)
     try:
         DBSession.add(modelrun)
         DBSession.commit()

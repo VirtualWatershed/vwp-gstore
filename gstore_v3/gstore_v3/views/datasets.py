@@ -461,7 +461,7 @@ def indexer(request):
     except:
         return HTTPServerError('failed to put index document for %s' % d.uuid)
 
-
+#upload data via swift
 @view_config(route_name='gettoken', request_method='GET', permission='add_dataset', renderer='json')
 def gettoken(request):
     swift_tenant=request.registry.settings['swift_tenant']
@@ -492,7 +492,7 @@ def gettoken(request):
         "preauthurl": swifturl
     }
     return list
-
+#upload via simple http post.
 @view_config(route_name='add_data', request_method='POST', permission='add_dataset')
 def add_data(request):
     userid = authenticated_userid(request)

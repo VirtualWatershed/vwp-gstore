@@ -15,16 +15,16 @@
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="../../docs/stable.html">Stable</a></li>
-                    <li class="active"><a href="#">Developer</a></li>
-                    <li><a href="../../docs/architecture.html">Architecture</a></li>
+                    <li class="active"><a href="../stable.html">Stable</a></li>
+                    <li><a href="../../developer/">Developer</a></li>
+                    <li><a href="../architecture.html">Architecture</a></li>
                 </ul>
             </div>
         </div>
     </div>
 
     <div class="container docs">
-        <div class="row">
+        <div class="row" >
 
             <h1>External Applications</h1>
                External appliations allows you to associate an internal account with an external application, and insert datasets that are then associated with external users.
@@ -100,7 +100,7 @@ vwadmin@edac.unm.edu now tied to virtualwatershed.org
 
 
 
-<div class="http-definition">
+<div class="http-definition" id="createexternaluser">
                             <h3>
                                 <span class="http-method">POST</span>
                                 <span class="http-path">/createexternaluser</span>
@@ -167,7 +167,7 @@ User ID created: 3ebde0ea-3ccc-11e7-afca-1379018a5da1
 
 
         </div><p></p>
-        <div class="http-definition">
+        <div class="http-definition" id="showexternalusers">
 
                                     <h3>
                                         <span class="http-method">GET</span>
@@ -190,9 +190,32 @@ User ID created: 3ebde0ea-3ccc-11e7-afca-1379018a5da1
 
             }
           </pre>
+          <p></p>
+          <h5>Query Parameters</h5>
+          <table class="params">
+              <thead>
+                  <tr>
+                      <th>Parameter</th>
+                      <th>Description</th>
+                      <th>Type</th>
+                      <th>Options</th>
+                      <th>Required</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td>userid</td>
+                      <td>Returns True if user exists or False if user does not exist.</td>
+                      <td>UUID</td>
+                      <td></td>
+                      <td>F</td>
+                  </tr>
+              </tbody>
+          </table>
        </div>
+
        <p></p>
-       <div class="http-definition">
+       <div class="http-definition" id="search">
 
                                    <h3>
                                        <span class="http-method">POST</span>

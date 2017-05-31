@@ -9,6 +9,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from paste.httpheaders import AUTHORIZATION
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPServerError, HTTPBadRequest, HTTPUnprocessableEntity, HTTPUnauthorized
 from ..models import DBSession
+from ..lib.utils import normalize_params
 from sqlalchemy.sql.expression import and_
 from ..models.users import (
     Users,
@@ -277,26 +278,47 @@ def changemypassword(request):
 #*********************************************************************************************************************
 @view_config(route_name='showexternalusers', permission='loggedin')
 def showexternalusers(request):
-    userid = authenticated_userid(request)
-    UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
-    appname = DBSession.query(ExternalApps.name,ExternalApps.appid).filter(ExternalApps.userid==UserIDInt).first()
-    response=Response()
-    response.content_type = 'application/json'
-    if(appname):
-           externaluserids=DBSession.query(Externalusers.uuid).filter(Externalusers.appid==appname[1]).all()
-           data = {}
-           data['app'] = appname[0]
-           data['userids'] = []
-           for externaluserid in externaluserids:
-                  data['userids'].append(externaluserid[0])
-#"externalapp": appname[0], "externalusersids"[]}
-           response.body = json.dumps(data)
-           return response
+    params = normalize_params(request.params)
+    userid = params.get('userid') if 'userid' in request.params else ''
+    if (userid):
+            pattern = re.compile("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
+            if pattern.match(userid):
+                response=Response()
+                response.content_type = 'application/json'
+                data = {}
+                existUser=DBSession.query(Externalusers.uuid).filter(Externalusers.uuid==userid).first()
+                if(existUser):
+                    data['exists'] = True
+                else:
+                    data['exists'] = False
+                response.body = json.dumps(data)
+                return response
+            else:
+                   response=Response()
+                   response.status_code=428
+                   response.body="Not a valid UUID"
+                   return response
     else:
-           response=Response()
-           response.status_code=428
-           response.body="Account is not asociated with any external applications."
-           return response
+            userid = authenticated_userid(request)
+            UserIDInt=DBSession.query(Users.id).filter(Users.userid==userid).first()
+            appname = DBSession.query(ExternalApps.name,ExternalApps.appid).filter(ExternalApps.userid==UserIDInt).first()
+            response=Response()
+            response.content_type = 'application/json'
+            if(appname):
+                   externaluserids=DBSession.query(Externalusers.uuid).filter(Externalusers.appid==appname[1]).all()
+                   data = {}
+                   data['app'] = appname[0]
+                   data['userids'] = []
+                   for externaluserid in externaluserids:
+                          data['userids'].append(externaluserid[0])
+        #"externalapp": appname[0], "externalusersids"[]}
+                   response.body = json.dumps(data)
+                   return response
+            else:
+                   response=Response()
+                   response.status_code=428
+                   response.body="Account is not asociated with any external applications."
+                   return response
 
 #*********************************************************************************************************************
 

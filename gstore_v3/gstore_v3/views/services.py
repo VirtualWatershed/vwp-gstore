@@ -11,7 +11,6 @@ from urlparse import urlparse
 import urllib2
 import json
 
-from PIL import Image
 import mapscript
 from cStringIO import StringIO
 
