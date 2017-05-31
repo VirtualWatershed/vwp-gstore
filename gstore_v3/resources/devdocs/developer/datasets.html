@@ -222,15 +222,53 @@
 
                             <h4>Request Parameters</h4>
                             <h5>Route Parameters</h5>
-                            <p>None.</p>
+                            <p>{app}</p>
                             <h5>Query Parameters</h5>
-                            <p>name: Name of model</p>
                             <p>modelid: Model Run UUID</p>
-                            <h5>Examples:</h5>
-                            <pre>payload = {"name": "isnobal","modelid": "1dacc407-6488-42c1-a4de-0b6de97b46c1"}               
-r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, auth=(u, p))</pre>
+                            <h5>Code Example:</h5>
+                            <pre>#!/usr/bin/python
+import json
+import requests
+
+#Name of server and app we are posting to:
+hostname = "vwp-dev.unm.edu"
+app = "vwp"
+
+#Login info:
+u = "username"
+p = "password"
+
+#File to upload:
+pathtofile='/vwpdata/e535106_nw_nw.xls'
+#for requests. Tells requests to open file in readonly binary mode.
+files = {'file': open(pathtofile, 'rb')}
+
+#Create URLs using hostname and app variables.
+login_url = "https://" + hostname + "/apilogin"
+upload_url = "https://"+hostname+"/apps/"+app+"/data"
+
+#The model ID this file belongs to. Files are orginized by model run UUID on the filesystem.
+modelid="30a426a4-b69d-494d-a851-a5a083e68d11"
+payload = {"modelid": modelid}
+
+
+#start the session
+with requests.session() as s:
+    #login within session
+    l= s.get(login_url, auth=(u,p), verify=False)
+    #if login is successful...
+    if l.status_code == 200:
+        #then post the file.
+        result = s.post(upload_url, files=files, data=payload, auth=(u, p))
+        if result.status_code == 200:
+            print result.text
+        else:
+            print "FAILED UPLOAD! The error is: " + result.text
+    else:
+        print "Login failure. The error is: "+ l.text
+</pre>
                             <h4>Response</h4>
-                            <p>Coming soon.</p>
+                            <p>OK or error</p>
                         </div>
                     </li>
                       <li id="newmodelrun">
@@ -250,11 +288,90 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                             <p>None.</p>
                             <h5>Route Parameters</h5>
                             <p>{app}</p>
-                            <h5>Query Parameters</h5>
-                            <p>description: isnobal experimental run.</p>
-                            <p>modelid: Model Run UUID</p>
-                            <h5>Examples:</h5>
-                            <pre>{"description": "inital insert"}</pre>
+                            <h5>JSON Payload Parameters</h5>
+         <table class="params">
+              <thead>
+                  <tr>
+                      <th>Parameter</th>
+                      <th>Description</th>
+                      <th>Type</th>
+                      <th>Required</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td>description</td>
+                      <td>Describes the model run.</td>
+                      <td>String</td>
+                      <td>F</td>
+                  </tr>
+              </tbody>
+              <tbody>
+                  <tr>
+                      <td>model_run_name</td>
+                      <td>Unique name of model run</td>
+                      <td>String</td>
+                      <td>T</td>
+                  </tr>
+              </tbody>
+              <tbody>
+                  <tr>
+                      <td>model_keywords</td>
+                      <td>Used for model run searches</td>
+                      <td>String</td>
+                      <td>F</td>
+                  </tr>
+              </tbody>
+              <tbody>
+                  <tr>
+                      <td>externaluserid</td>
+                      <td>If model run is being created by an external user.</td>
+                      <td>UUID</td>
+                      <td>F</td>
+                  </tr>
+              </tbody>
+
+
+          </table>
+
+                            <h5>Example JSON:</h5>
+ <pre>{"description":"Isnobal run with high temeratures at night", "model_run_name":"ISNOBAL-AQ2-A93", "model_keywords":"isnobal, high temps, night", "externaluserid":"3ebde0ea-3ccc-11e7-afca-1379018a5da5"}</pre>
+
+                            <h5>Example Python:</h5>
+<pre>
+
+#!/usr/bin/python
+import json
+import requests
+
+import urllib3
+urllib3.disable_warnings()
+
+hostname = "vwp-dev.unm.edu"
+u = "username"
+p = "password"
+with requests.session() as s:
+
+    login_url = "https://" + hostname + "/apilogin"
+    l= s.get(login_url, auth=(u,p), verify=False)
+    print l.text
+    if l.status_code == 200:
+        data = {"description":"Isnobal run with high temperatures at night", "model_run_name":"ISNOBAL-AQ2-A93", "model_keywords":"isnobal, high temps, night","externaluserid":"3ebde0ea-3ccc-11e7-afca-1379018a5da5"}
+        model_id_url = "https://" + hostname + "/apps/vwp/newmodelrun"
+        result = s.post(model_id_url, data=json.dumps(data), auth=(u, p), verify=False)
+        if result.status_code == 200:
+            sessionid = s.cookies.get('SESSIONID')
+            model_run_uuid = result.text
+            print model_run_uuid
+        else:
+            print "Failure to insert!"
+	    print "Error is: " + result.txt
+    else:
+        print "Login failure"
+        print l.text
+
+
+</pre>
                             <h4>Response</h4>
                             <p>modelrun UUID</p>
                         </div>
@@ -351,7 +468,7 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                             </table>
 
                             <h5>Query Parameters</h5>
-                            <h5>Route Parameters</h5>
+                            
                               <table class="params">
                                 <thead>
                                     <tr>
@@ -373,8 +490,32 @@ r = requests.post(129.24.196.25/apps/my_app/data, files=in.0000, data=payload, a
                                 </tbody>
                             </table>
 
-                            <h5>Examples</h5>
-                            <p>Coming soon.</p>
+                            <h5>Code Example</h5>
+<pre>import os
+import json
+import requests
+
+import urllib3
+urllib3.disable_warnings()
+
+hostname = "vwp-dev.unm.edu"
+u = "username"
+p = "password"
+with requests.session() as s:
+    login_url = "https://" + hostname + "/apilogin"
+    l= s.get(login_url, auth=(u,p), verify=False)
+    print l.text
+    if l.status_code == 200:
+        data = {"model_uuid":"240a2330-9c13-40f3-625d-f96939cf3ae6"}
+        model_id_url = "https://" + hostname + "/apps/vwp/deletemodelid"
+        result = s.delete(model_id_url, data=json.dumps(data), auth=(u, p), verify=False)
+        sessionid = s.cookies.get('SESSIONID')
+        model_run_uuid = result.text
+        print model_run_uuid
+    else:
+        print "Login failure"
+        print l.text
+</pre>
 
                             <h4>Response</h4>
                             <p>Coming soon.</p>
