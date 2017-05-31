@@ -130,7 +130,8 @@ def search_modelruns(request):
         modelName = request.params.get('model_run_name') if 'model_run_name' in request.params else ''
         desc = request.params.get('description') if 'description' in request.params else ''
         uid = request.params.get('userid') if 'userid' in request.params else ''
-
+        externaluserid = request.params.get('externaluserid') if 'externaluserid' in request.params else ''
+        externalapp = request.params.get('externalapp') if 'externalapp' in request.params else ''
         filter_cond=[]
 
         if userid is None:
@@ -163,6 +164,13 @@ def search_modelruns(request):
         if desc:
                 #print "Description: %s" % desc
                 filter_cond.append(Modelruns.description.contains(desc))
+        if externaluserid:
+                
+                filter_cond.append(Modelruns.externaluserid.contains(externaluserid))
+        if externalapp:
+
+                filter_cond.append(Modelruns.externalapp.contains(externalapp))
+
 
 
 #	print "\n\n********************"
@@ -172,13 +180,12 @@ def search_modelruns(request):
 	
 
 	if (filter_cond and len(filter_cond)>=1):
-	    	#print "Filter conditions found with 1 parameter..."
-		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).filter(and_(*filter_cond))
+		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords,Modelruns.externalapp,Modelruns.externaluserid).filter(and_(*filter_cond))
 	else:
-		#print "Filter conditions not found...printing all records"
-		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords).all()
+		model_query=DBSession.query(Modelruns.researcher_name,Modelruns.model_run_name,Modelruns.model_run_id,Modelruns.description,Modelruns.model_keywords,Modelruns.externalapp,Modelruns.externaluserid).all()
 
-	response = Response(json.dumps({'results': [{'Model Run UUID':i.model_run_id,'Description': i.description,'Model Run Name':i.model_run_name,'Researcher Name': i.researcher_name,'Keywords':i.model_keywords} for i in model_query]}))
+	response = Response(json.dumps({'results': [{'Model Run UUID':i.model_run_id,'Description': i.description,'Model Run Name':i.model_run_name,'Researcher Name': i.researcher_name,'Keywords':i.model_keywords,'Externalapp':i.externalapp,'Externaluserid':i.externaluserid} for i in model_query]}))
+
 
     	response.headers['Access-Control-Allow-Origin'] = '*'
 	response.content_type="application/json"
