@@ -24,10 +24,12 @@ class Modelruns(Base):
         Column('end_date', TIMESTAMP, FetchedValue()),
         Column('id', Integer, primary_key=True),
         Column('public', Boolean),
+        Column('externaluserid', String(100)),
+        Column('externalapp',  String(100)),
         schema = 'gstoredata'
     )
 
-    def __init__(self, model_run_id, description, researcher_name,userid,model_run_name,model_keywords,public):
+    def __init__(self, model_run_id, description, researcher_name,userid,model_run_name,model_keywords,public,externaluserid,externalapp):
         self.model_run_id, = model_run_id,
         self.description = description,
         self.researcher_name=researcher_name,
@@ -35,4 +37,5 @@ class Modelruns(Base):
         self.model_run_name=model_run_name,
         self.model_keywords=model_keywords,
         self.public=public,
-
+        self.externaluserid=externaluserid,
+        self.externalapp=externalapp,
