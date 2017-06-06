@@ -63,7 +63,7 @@ def return_fileresponse(output, mimetype, filename):
     don't really want to get into. Basically, don't change the key and don't chuck the cookie
     as long as rgis/epscor use that plugin.
     '''
-    fr.set_cookie(key='fileDownload', value='true', max_age=31536000, path='/')
+    fr.set_cookie(name='fileDownload', value='true', max_age=31536000, path='/')
     return fr
 
 @view_config(route_name='dataset')
