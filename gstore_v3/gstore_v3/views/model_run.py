@@ -141,11 +141,11 @@ def add_model_id(request):
     researcher_name= firstname + " " + lastname
     model_run_name=request.json['model_run_name']
     model_keywords=request.json['model_keywords']
-    #set external app to supplied value or 'n/a' by default.
-    externaluserid = request.json['externaluserid'] if 'externaluserid' in request.json else 'n/a'
-    externalapp = 'n/a'
+    #set external app to supplied value or 'None' by default.
+    externaluserid = request.json['externaluserid'] if 'externaluserid' in request.json else 'None'
+    externalapp = 'None'
     #if user supplied an external user UUID
-    if externaluserid != "n/a":
+    if externaluserid != "None":
         #if the UUID is valid
         pattern = re.compile("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
         if pattern.match(externaluserid):

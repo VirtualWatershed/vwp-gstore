@@ -703,10 +703,10 @@ def add_dataset(request):
     model_run_name = model_description.description
     model_vars = post_data['model_vars']
     parent_model_run_uuid = post_data['parent_model_run_uuid']
-    externaluserid = post_data['externaluserid'] if 'externaluserid' in post_data else 'n/a'
-    externalapp = 'n/a'
+    externaluserid = post_data['externaluserid'] if 'externaluserid' in post_data else 'None'
+    externalapp = 'None'
 
-    if externaluserid != "n/a":
+    if externaluserid != "None":
      pattern = re.compile("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
      if pattern.match(externaluserid):
         usersappid=DBSession.query(Externalusers.appid).filter(Externalusers.uuid==externaluserid).first()
