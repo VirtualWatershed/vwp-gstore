@@ -11,7 +11,7 @@ from urlparse import urlparse
 import urllib2
 import json
 
-import mapscript
+import _mapscript
 from cStringIO import StringIO
 
 from ..models import DBSession
