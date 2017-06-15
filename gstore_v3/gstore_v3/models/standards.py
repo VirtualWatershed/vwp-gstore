@@ -720,7 +720,7 @@ class GstoreMetadata():
         spref_code = spref.find('code').text
         spref_auth = spref.find('authority').text
         
-        ref_xml = etree.parse(fgdc_refs)
+        ref_xml = etree.parse(open(fgdc_refs))
         ref = ref_xml.xpath('spref[code="%s:%s"]' % (spref_auth, spref_code))
         
         if not ref:
